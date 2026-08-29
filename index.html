@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TaskMoon 🌙</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#f5f7fb;
+    color:#151515;
+    padding-bottom:80px;
+}
+
+.header{
+    background:#111827;
+    color:white;
+    padding:22px 18px;
+    border-radius:0 0 25px 25px;
+}
+
+.logo{
+    font-size:25px;
+    font-weight:bold;
+}
+
+.subtitle{
+    margin-top:6px;
+    opacity:.75;
+    font-size:14px;
+}
+
+.container{
+    padding:16px;
+}
+
+.balance{
+    background:white;
+    padding:20px;
+    border-radius:18px;
+    margin-top:-5px;
+    box-shadow:0 5px 20px rgba(0,0,0,.06);
+}
+
+.balance-title{
+    color:#777;
+    font-size:14px;
+}
+
+.balance-value{
+    font-size:30px;
+    font-weight:bold;
+    margin:7px 0 15px;
+}
+
+.withdraw{
+    width:100%;
+    border:0;
+    padding:13px;
+    border-radius:12px;
+    background:#111827;
+    color:white;
+    font-size:15px;
+    font-weight:bold;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-top:15px;
+}
+
+.stat{
+    background:white;
+    padding:17px;
+    border-radius:16px;
+    box-shadow:0 4px 15px rgba(0,0,0,.05);
+}
+
+.stat-icon{
+    font-size:22px;
+}
+
+.stat-title{
+    color:#777;
+    font-size:13px;
+    margin-top:7px;
+}
+
+.stat-value{
+    font-size:20px;
+    font-weight:bold;
+    margin-top:4px;
+}
+
+.section{
+    margin-top:22px;
+}
+
+.section-title{
+    font-size:19px;
+    font-weight:bold;
+    margin-bottom:12px;
+}
+
+.referral{
+    background:#111827;
+    color:white;
+    padding:18px;
+    border-radius:18px;
+}
+
+.referral p{
+    font-size:14px;
+    opacity:.8;
+    margin:7px 0 14px;
+}
+
+.ref-btn{
+    background:white;
+    color:#111827;
+    border:0;
+    padding:11px 16px;
+    border-radius:10px;
+    font-weight:bold;
+}
+
+.task{
+    background:white;
+    padding:17px;
+    border-radius:17px;
+    margin-bottom:12px;
+    box-shadow:0 4px 15px rgba(0,0,0,.05);
+}
+
+.task-title{
+    font-size:17px;
+    font-weight:bold;
+}
+
+.task-info{
+    display:flex;
+    justify-content:space-between;
+    margin:12px 0;
+    color:#666;
+    font-size:13px;
+}
+
+.task-btn{
+    width:100%;
+    border:0;
+    padding:12px;
+    border-radius:11px;
+    background:#111827;
+    color:white;
+    font-weight:bold;
+}
+
+.features{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+.feature{
+    background:white;
+    padding:18px;
+    border-radius:15px;
+    text-align:center;
+}
+
+.feature-icon{
+    font-size:26px;
+}
+
+.feature-text{
+    margin-top:8px;
+    font-size:13px;
+    color:#555;
+}
+
+.bottom{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    background:white;
+    border-top:1px solid #eee;
+    height:70px;
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+    z-index:10;
+}
+
+.nav{
+    text-align:center;
+    color:#777;
+    font-size:11px;
+}
+
+.nav span{
+    display:block;
+    font-size:21px;
+    margin-bottom:3px;
+}
+
+.nav.active{
+    color:#111827;
+    font-weight:bold;
+}
+
+.page{
+    display:none;
+}
+
+.page.active{
+    display:block;
+}
+
+.back{
+    border:0;
+    background:white;
+    padding:10px 14px;
+    border-radius:10px;
+    margin-bottom:15px;
+}
+
+.form{
+    background:white;
+    padding:18px;
+    border-radius:18px;
+}
+
+.input{
+    width:100%;
+    padding:13px;
+    margin:8px 0 13px;
+    border:1px solid #ddd;
+    border-radius:10px;
+}
+
+.submit{
+    width:100%;
+    border:0;
+    padding:13px;
+    border-radius:11px;
+    background:#111827;
+    color:white;
+    font-weight:bold;
+}
+
+.empty{
+    text-align:center;
+    background:white;
+    padding:30px;
+    border-radius:17px;
+    color:#777;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HOME -->
+
+<div id="home" class="page active">
+
+<div class="header">
+    <div class="logo">🌙 TaskMoon</div>
+    <div class="subtitle">Work • Earn • Grow</div>
+</div>
+
+<div class="container">
+
+<div class="balance">
+    <div class="balance-title">Wallet Balance</div>
+    <div class="balance-value">৳0.00</div>
+    <button class="withdraw" onclick="openPage('wallet')">
+        💸 Withdraw
+    </button>
+</div>
+
+<div class="stats">
+
+<div class="stat">
+    <div class="stat-icon">📋</div>
+    <div class="stat-title">Total Tasks</div>
+    <div class="stat-value">0</div>
+</div>
+
+<div class="stat">
+    <div class="stat-icon">✅</div>
+    <div class="stat-title">Completed</div>
+    <div class="stat-value">0</div>
+</div>
+
+<div class="stat">
+    <div class="stat-icon">⏳</div>
+    <div class="stat-title">In Progress</div>
+    <div class="stat-value">0</div>
+</div>
+
+<div class="stat">
+    <div class="stat-icon">💰</div>
+    <div class="stat-title">Total Earned</div>
+    <div class="stat-value">৳0</div>
+</div>
+
+</div>
+
+<div class="section">
+
+<div class="referral">
+
+<h3>👥 Refer & Earn</h3>
+
+<p>
+বন্ধুদের Invite করুন এবং আপনার Referral Reward পান।
+</p>
+
+<button class="ref-btn" onclick="openPage('refer')">
+    🔗 Refer Now
+</button>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<div class="section-title">
+📋 Available Tasks
+</div>
+
+<div class="task">
+
+<div class="task-title">
+🖼️ Background Remove
+</div>
+
+<div class="task-info">
+<span>💰 ৳10</span>
+<span>📦 20 Work</span>
+<span>⏰ 24h</span>
+</div>
+
+<button class="task-btn" onclick="openTask()">
+    🎯 View Task
+</button>
+
+</div>
+
+<div class="task">
+
+<div class="task-title">
+⌨️ Bangla Text Typing
+</div>
+
+<div class="task-info">
+<span>💰 ৳15</span>
+<span>📦 10 Work</span>
+<span>⏰ 12h</span>
+</div>
+
+<button class="task-btn" onclick="openTask()">
+    🎯 View Task
+</button>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<div class="section-title">
+🛡️ Why TaskMoon?
+</div>
+
+<div class="features">
+
+<div class="feature">
+<div class="feature-icon">🔒</div>
+<div class="feature-text">Safe & Secure</div>
+</div>
+
+<div class="feature">
+<div class="feature-icon">⚡</div>
+<div class="feature-text">Fast Payment</div>
+</div>
+
+<div class="feature">
+<div class="feature-icon">🕐</div>
+<div class="feature-text">24/7 Support</div>
+</div>
+
+<div class="feature">
+<div class="feature-icon">📢</div>
+<div class="feature-text">Join Our Channel</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+
+<!-- TASKS -->
+
+<div id="tasks" class="page">
+
+<div class="header">
+<div class="logo">📋 Tasks</div>
+<div class="subtitle">Find available work</div>
+</div>
+
+<div class="container">
+
+<div class="task">
+
+<div class="task-title">
+🖼️ Background Remove
+</div>
+
+<div class="task-info">
+<span>💰 ৳10</span>
+<span>📦 20 Work</span>
+<span>⏰ 24h</span>
+</div>
+
+<button class="task-btn" onclick="openTask()">
+Take Task
+</button>
+
+</div>
+
+<div class="task">
+
+<div class="task-title">
+⌨️ Text Typing (Bangla)
+</div>
+
+<div class="task-info">
+<span>💰 ৳15</span>
+<span>📦 10 Work</span>
+<span>⏰ 12h</span>
+</div>
+
+<button class="task-btn" onclick="openTask()">
+Take Task
+</button>
+
+</div>
+
+<div class="task">
+
+<div class="task-title">
+✂️ Image Crop / Resize
+</div>
+
+<div class="task-info">
+<span>💰 ৳8</span>
+<span>📦 30 Work</span>
+<span>⏰ 24h</span>
+</div>
+
+<button class="task-btn" onclick="openTask()">
+Take Task
+</button>
+
+</div>
+
+</div>
+</div>
+
+
+<!-- TASK DETAIL -->
+
+<div id="detail" class="page">
+
+<div class="container">
+
+<button class="back" onclick="openPage('tasks')">
+← Back
+</button>
+
+<div class="section-title">
+📝 Task Details
+</div>
+
+<div class="task">
+
+<div class="task-title">
+🖼️ Background Remove
+</div>
+
+<div class="task-info">
+<span>💰 Payment: ৳10</span>
+</div>
+
+<div class="task-info">
+<span>📦 Total Work: 20</span>
+</div>
+
+<div class="task-info">
+<span>⏰ Deadline: 24 Hours</span>
+</div>
+
+<hr><br>
+
+<p>
+<b>Task ID:</b> TM-1001
+</p>
+
+<br>
+
+<p>
+<b>Instructions</b>
+</p>
+
+<br>
+
+<p style="color:#666;font-size:14px;line-height:1.6;">
+Attached image থেকে background remove করুন।
+কাজ শেষ হলে PNG অথবা JPG ফাইল হিসেবে Submit করুন।
+</p>
+
+<br>
+
+<div style="font-size:60px;text-align:center;">
+🖼️
+</div>
+
+<br>
+
+<button class="task-btn" onclick="openPage('submit')">
+📤 Submit Work
+</button>
+
+</div>
+
+</div>
+</div>
+
+
+<!-- SUBMIT -->
+
+<div id="submit" class="page">
+
+<div class="container">
+
+<button class="back" onclick="openPage('detail')">
+← Back
+</
