@@ -1996,6 +1996,9 @@ function startSupportChat(){
       document.getElementById("supportChatBox");
 
     if(box){
+
+      startSupportChatRefresh(data.chat_id);
+
       box.innerHTML = `
         <div class="card">
 
@@ -2217,6 +2220,22 @@ function loadSupportChat(chatId){
     console.error("Chat refresh error:", error);
   });
 
+}
+
+
+let supportChatRefreshTimer = null;
+
+function startSupportChatRefresh(chatId){
+
+  if(supportChatRefreshTimer){
+    clearInterval(supportChatRefreshTimer);
+  }
+
+  loadSupportChat(chatId);
+
+  supportChatRefreshTimer = setInterval(() => {
+    loadSupportChat(chatId);
+  }, 3000);
 }
 
 
