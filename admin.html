@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TaskMoon Admin 🌙</title>
+<style>
+body{margin:0;background:#061415;color:#fff;font-family:Arial;padding:16px}
+h1{color:#42e0d1}
+.card{background:#0b2223;border:1px solid #153f40;border-radius:14px;padding:15px;margin:12px 0}
+input,button{width:100%;padding:12px;margin-top:10px;border-radius:9px;border:0;box-sizing:border-box}
+input{background:#102728;color:#fff;border:1px solid #285455}
+button{background:#123f40;color:#fff;font-weight:bold}
+.uid{color:#42e0d1;font-weight:bold}
+</style>
+</head>
+
+<body>
+
+<h1>🌙 TaskMoon Admin</h1>
+
+<div class="card">
+<h3>🔐 Admin Login</h3>
+
+<input id="adminId" type="number" placeholder="Admin ID">
+
+<button onclick="loadChats()">
+📩 Load Live Chats
+</button>
+</div>
+
+<div id="chatList"></div>
+
+<script>
+
+const API =
+"https://taskmoon-backend.onrender.com";
+
+async function loadChats(){
+
+  const adminId =
+    document.getElementById("adminId").value;
+
+  if(adminId !== "7136507076"){
+
+    alert("❌ Unauthorized Admin");
+    return;
+
+  }
+
+  const list =
+    document.getElementById("chatList");
+
+  list.innerHTML =
+    "<div class='card'>⏳ Loading...</div>";
+
+  try{
+
+    const response =
+      await fetch(
+        API +
+        "/admin/support/chats?admin_id=" +
+        adminId
+      );
+
+    const data =
+      await response.json();
+
+    if(!response.ok){
+
+      list.innerHTML =
+        "<div class='card'>❌ " +
+        (data.error || "Error") +
+        "</div>";
+
+      return;
+    }
+
+    if(data.length === 0){
+
+      list.innerHTML =
+        "<div class='card'>📭 এখন কোনো Chat নেই।</div>";
+
+      return;
+
+    }
+
+    list.innerHTML = data.map(chat => `
+
+      <div class="card">
+
+        <div class="uid">
+          🆔 UID: ${chat.uid}
+        </div>
+
+        <p>📋 Problem: ${chat.problem}</p>
+
+        <p>💬 Message: ${chat.message || "No message"}</p>
+
+        <p>🟢 Status: ${chat.status}</p>
+
+        <small>${chat.created_at}</small>
+
+      </div>
+
+    `).join("");
+
+  }catch(error){
+
+    list.innerHTML =
+      "<div class='card'>❌ Server connection failed.</div>";
+
+  }
+
+}
+
+</script>
+
+</body>
+</html>

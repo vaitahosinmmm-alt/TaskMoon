@@ -604,6 +604,64 @@ Referral link তৈরি হচ্ছে...
 </section>
 
 
+<section id="support" class="section">
+
+<div class="container">
+
+<div class="title">
+<h2>🌙 Welcome to TaskMoon</h2>
+</div>
+
+<div class="card">
+<h3>👨‍💼 Customer Service</h3>
+<p>আপনার যেকোনো সমস্যার জন্য আমাদের Customer Service-এর সাথে যোগাযোগ করুন।</p>
+
+<button class="btn" onclick="openLiveChat()">
+💬 LiveChat
+</button>
+</div>
+
+<div id="supportChatBox" style="display:none">
+
+<div class="card">
+
+<h3>🆔 UID দিন</h3>
+
+<input
+id="supportUID"
+type="text"
+inputmode="numeric"
+placeholder="আপনার UID লিখুন"
+style="width:100%;padding:13px;border-radius:10px;border:1px solid #153f40;background:#071819;color:#fff;margin:10px 0;">
+
+<h3>📋 সমস্যা Select করুন</h3>
+
+<select
+id="supportProblem"
+style="width:100%;padding:13px;border-radius:10px;border:1px solid #153f40;background:#071819;color:#fff;margin:10px 0;">
+
+<option value="">সমস্যা নির্বাচন করুন</option>
+<option value="Account Problem">Account Problem</option>
+<option value="Task Problem">Task Problem</option>
+<option value="Coin Problem">Coin Problem</option>
+<option value="Referral Problem">Referral Problem</option>
+<option value="Withdrawal Problem">Withdrawal Problem</option>
+<option value="Other">Other</option>
+
+</select>
+
+<button class="btn" onclick="startSupportChat()">
+🚀 Start the Chat
+</button>
+
+</div>
+
+</div>
+
+</div>
+</section>
+
+
 <nav class="nav">
 
 <button class="active" onclick="showSection('home',this)">
@@ -629,6 +687,9 @@ Refer
 <button onclick="showSection('islamic',this)">
 <div>🕌</div>
 Islamic
+</button>
+<button onclick="showSection('support',this)">
+<div>💬</div> Support
 </button>
 
 </nav>
@@ -1849,6 +1910,100 @@ document.addEventListener(
   "DOMContentLoaded",
   showReferralLink
 );
+</script>
+
+
+<script>
+
+function openLiveChat(){
+
+  const box = document.getElementById("supportChatBox");
+
+  if(box){
+    box.style.display = "block";
+  }
+
+}
+
+function startSupportChat(){
+
+  const uid =
+    document.getElementById("supportUID")?.value.trim();
+
+  const problem =
+    document.getElementById("supportProblem")?.value;
+
+  if(!uid){
+
+    alert("🆔 আগে আপনার UID দিন।");
+    return;
+
+  }
+
+  if(!problem){
+
+    alert("📋 আগে সমস্যাটি Select করুন।");
+    return;
+
+  }
+
+  const telegramUser =
+    window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+  if(!telegramUser || !telegramUser.id){
+
+    alert("⚠️ Telegram App থেকে Support খুলুন।");
+    return;
+
+  }
+
+  fetch(
+    "https://taskmoon-backend.onrender.com/support/chat",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        user_id: telegramUser.id,
+        uid: uid,
+        problem: problem,
+        message: ""
+      })
+    }
+  )
+  .then(response => response.json())
+  .then(data => {
+
+    if(!data.success){
+
+      alert(
+        "❌ Chat শুরু করা যায়নি।\n" +
+        (data.error || "Unknown error")
+      );
+
+      return;
+    }
+
+    alert(
+      "✅ Live Chat Started!\n\n" +
+      "🆔 UID: " + uid + "\n" +
+      "📋 Problem: " + problem
+    );
+
+  })
+  .catch(error => {
+
+    console.error(error);
+
+    alert(
+      "❌ Server-এর সাথে যোগাযোগ করা যাচ্ছে না।"
+    );
+
+  });
+
+}
+
 </script>
 
 </body>
