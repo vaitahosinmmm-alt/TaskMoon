@@ -410,18 +410,26 @@ textarea{
 </div>
 </section>
 
+
 <section id="tasks" class="section">
 <div class="container">
 
 <div class="title">
-<h2>📋 Available Tasks</h2>
-<span>Earn Coins</span>
+  <h2>📋 Task Center</h2>
+  <span>🪙</span>
+</div>
+
+<div class="card task-balance">
+  <h3>🪙 Your Coins</h3>
+  <div id="taskCoinBalance">0 Coins</div>
+  <p>Task complete করে coins earn করুন।</p>
 </div>
 
 <div id="taskList"></div>
 
 </div>
 </section>
+
 
 <section id="wallet" class="section">
 <div class="container">
@@ -621,7 +629,7 @@ description:"দেওয়া ছবি বা PDF দেখে নির্ভ�
 {
 id:3,
 title:"✂️ Image Crop & Resize",
-reward:40,
+reward:90,
 category:"Image Editing",
 limit:"2 বার",
 description:"দেওয়া ছবিকে নির্দেশিত size অনুযায়ী crop ও resize করতে হবে।"
@@ -630,7 +638,7 @@ description:"দেওয়া ছবিকে নির্দেশিত size �
 {
 id:4,
 title:"📝 Data Entry",
-reward:60,
+reward:30,
 category:"Data Entry",
 limit:"1 বার",
 description:"দেওয়া তথ্য নির্দিষ্ট format অনুযায়ী entry করতে হবে।"
@@ -639,7 +647,7 @@ description:"দেওয়া তথ্য নির্দিষ্ট format অ
 {
 id:5,
 title:"📄 PDF → Text",
-reward:100,
+reward:70,
 category:"Typing",
 limit:"1 বার",
 description:"দেওয়া PDF থেকে প্রয়োজনীয় text নির্ভুলভাবে লিখে জমা দিতে হবে।"
@@ -648,7 +656,7 @@ description:"দেওয়া PDF থেকে প্রয়োজনীয় text �
 {
 id:6,
 title:"🔤 বাংলা / English Typing",
-reward:70,
+reward:80,
 category:"Typing",
 limit:"1 বার",
 description:"দেওয়া content দেখে বাংলা অথবা English typing সম্পন্ন করতে হবে।"
@@ -710,7 +718,7 @@ Limit: ${task.limit}
 
 </div>
 
-<button onclick="openTask(${task.id})">
+<button onclick="alert('Coming Soon Dear ❤️🌙')">
 🚀 Take Task
 </button>
 
@@ -724,22 +732,7 @@ list.appendChild(div);
 
 function openTask(id){
 
-selectedTask=tasks.find(x=>x.id===id);
-
-document.getElementById("modalTitle")
-.innerText=selectedTask.title;
-
-document.getElementById("modalDescription")
-.innerText=
-selectedTask.description+
-"\n\nReward: "+
-selectedTask.reward+
-" Coins";
-
-document.getElementById("proof").value="";
-
-document.getElementById("taskModal")
-.classList.add("show");
+alert("🔜 Coming Soon Dear ❤️🌙");
 
 }
 
@@ -1483,6 +1476,202 @@ async function openSurah(number){
 
   }
 }
+
+</script>
+
+
+<script id="taskmoon-tasks">
+
+const TASKS = [
+  {
+    id: 1,
+    title: "📢 Telegram Channel Join",
+    description: "নির্দিষ্ট Telegram channel-এ join করুন।",
+    reward: 0,
+    link: "https://t.me/TASKMOON"
+  },
+  {
+    id: 2,
+    title: "📣 Telegram Group Join",
+    description: "নির্দিষ্ট Telegram group-এ join করুন।",
+    reward: 0,
+    link: "https://t.me/TASKMOON_BD"
+  },
+  {
+    id: 3,
+    title: "⭐ Daily Task",
+    description: "আজকের task সম্পূর্ণ করুন।",
+    reward: 0,
+    link: "#"
+  }
+];
+
+let completedTasks =
+  JSON.parse(localStorage.getItem("taskmoon_completed_tasks") || "[]");
+
+let taskCoins =
+  Number(localStorage.getItem("taskmoon_task_coins") || 0);
+
+function saveTaskData(){
+
+  localStorage.setItem(
+    "taskmoon_completed_tasks",
+    JSON.stringify(completedTasks)
+  );
+
+  localStorage.setItem(
+    "taskmoon_task_coins",
+    String(taskCoins)
+  );
+
+}
+
+function updateTaskBalance(){
+
+  const balance =
+    document.getElementById("taskCoinBalance");
+
+  if(balance){
+    balance.textContent =
+      taskCoins + " Coins";
+  }
+
+}
+
+function renderTasks(){
+
+  const list =
+    document.getElementById("taskList");
+
+  if(!list) return;
+
+  list.innerHTML = "";
+
+  TASKS.forEach(task => {
+
+    const completed =
+      completedTasks.includes(task.id);
+
+    const card =
+      document.createElement("div");
+
+    card.className = "card";
+
+    card.innerHTML = `
+      <div class="task-top">
+
+        <div>
+          <h3>${task.title}</h3>
+          <p>${task.description}</p>
+        </div>
+
+        <span class="reward">
+          +${task.reward} 🪙
+        </span>
+
+      </div>
+
+      ${
+        completed
+
+        ? `
+          <button class="btn" disabled>
+            ✅ Completed
+          </button>
+        `
+
+        : `
+          <button
+            class="btn"
+            onclick="startTask(${task.id})">
+            🚀 Start Task
+          </button>
+
+          <button
+            class="btn"
+            id="complete-${task.id}"
+            style="display:none"
+            onclick="completeTask(${task.id})">
+            ✅ Complete Task
+          </button>
+        `
+      }
+
+    `;
+
+    list.appendChild(card);
+
+  });
+
+  updateTaskBalance();
+
+}
+
+function startTask(id){
+
+  alert("Coming Soon Dear ❤️🌙");
+  return;
+
+  const task =
+    TASKS.find(item => item.id === id);
+
+  if(!task) return;
+
+  if(task.link && task.link !== "#"){
+
+    window.open(task.link, "_blank");
+
+  }
+
+  const button =
+    document.getElementById("complete-" + id);
+
+  if(button){
+
+    button.style.display = "block";
+
+    button.textContent =
+      "✅ কাজ শেষ হলে এখানে চাপুন";
+
+  }
+
+}
+
+function completeTask(id){
+
+  if(completedTasks.includes(id)){
+
+    alert("এই task-এর reward আগেই নেওয়া হয়েছে।");
+
+    return;
+
+  }
+
+  const task =
+    TASKS.find(item => item.id === id);
+
+  if(!task) return;
+
+  completedTasks.push(id);
+
+  taskCoins += task.reward;
+
+  saveTaskData();
+
+  renderTasks();
+
+  alert(
+    "🎉 Task Complete! +" +
+    task.reward +
+    " Coins"
+  );
+
+}
+
+document.addEventListener(
+  "DOMContentLoaded",
+  renderTasks
+);
 
 </script>
 
