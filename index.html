@@ -1949,27 +1949,21 @@ function startSupportChat(){
     document.getElementById("supportProblem")?.value;
 
   if(!uid){
-
     alert("🆔 আগে আপনার UID দিন।");
     return;
-
   }
 
   if(!problem){
-
     alert("📋 আগে সমস্যাটি Select করুন।");
     return;
-
   }
 
   const telegramUser =
     window.Telegram?.WebApp?.initDataUnsafe?.user;
 
   if(!telegramUser || !telegramUser.id){
-
     alert("⚠️ Telegram App থেকে Support খুলুন।");
     return;
-
   }
 
   fetch(
@@ -1991,20 +1985,65 @@ function startSupportChat(){
   .then(data => {
 
     if(!data.success){
-
       alert(
-        "❌ Chat শুরু করা যায়নি।\n" +
+        "❌ Chat শুরু করা যায়নি.\n" +
         (data.error || "Unknown error")
       );
-
       return;
     }
 
-    alert(
-      "✅ Live Chat Started!\n\n" +
-      "🆔 UID: " + uid + "\n" +
-      "📋 Problem: " + problem
-    );
+    const box =
+      document.getElementById("supportChatBox");
+
+    if(box){
+      box.innerHTML = `
+        <div class="card">
+
+          <h3>💬 TaskMoon Live Chat</h3>
+
+          <p>🆔 UID: ${uid}</p>
+          <p>📋 Problem: ${problem}</p>
+
+          <div
+            id="liveChatMessages"
+            style="
+              background:#071819;
+              border:1px solid #153f40;
+              border-radius:10px;
+              padding:12px;
+              min-height:120px;
+              margin:10px 0;
+            "
+          >
+            🟢 Chat Started!<br>
+            <small>Admin-এর reply-এর জন্য অপেক্ষা করুন।</small>
+          </div>
+
+          <input
+            id="liveChatMessage"
+            type="text"
+            placeholder="আপনার message লিখুন..."
+            style="
+              width:100%;
+              padding:13px;
+              border-radius:10px;
+              border:1px solid #153f40;
+              background:#071819;
+              color:#fff;
+              box-sizing:border-box;
+            "
+          >
+
+          <button
+            class="btn"
+            onclick="sendLiveChatMessage(${data.chat_id})"
+          >
+            📤 Send Message
+          </button>
+
+        </div>
+      `;
+    }
 
   })
   .catch(error => {
@@ -2019,6 +2058,25 @@ function startSupportChat(){
 
 }
 
+
+function sendLiveChatMessage(chatId){
+
+  const input =
+    document.getElementById("liveChatMessage");
+
+  const message =
+    input?.value.trim();
+
+  if(!message){
+    alert("✍️ আগে message লিখুন।");
+    return;
+  }
+
+  alert(
+    "📤 Message পাঠানোর system এখন backend-এর সাথে connect করতে হবে।"
+  );
+
+}
 </script>
 
 </body>
