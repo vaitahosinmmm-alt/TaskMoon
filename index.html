@@ -1485,26 +1485,40 @@ async function openSurah(number){
 const TASKS = [
   {
     id: 1,
-    title: "📢 Telegram Channel Join",
-    description: "নির্দিষ্ট Telegram channel-এ join করুন।",
-    reward: 0,
-    link: "https://t.me/TASKMOON"
+    title: "🖼️ Background Remove",
+    description: "দেওয়া ছবির background remove করে পরিষ্কার PNG ছবি তৈরি করতে হবে।",
+    reward: 50,
+    link: "#"
   },
   {
     id: 2,
-    title: "📣 Telegram Group Join",
-    description: "নির্দিষ্ট Telegram group-এ join করুন।",
-    reward: 0,
-    link: "https://t.me/TASKMOON_BD"
+    title: "⌨️ বাংলা / English Typing",
+    description: "দেওয়া content দেখে বাংলা অথবা English typing সম্পন্ন করতে হবে।",
+    reward: 80,
+    link: "#"
   },
   {
     id: 3,
-    title: "⭐ Daily Task",
-    description: "আজকের task সম্পূর্ণ করুন।",
-    reward: 0,
+    title: "✂️ Image Crop & Resize",
+    description: "দেওয়া ছবিকে নির্দেশিত size অনুযায়ী crop ও resize করতে হবে।",
+    reward: 90,
+    link: "#"
+  },
+  {
+    id: 4,
+    title: "📝 Data Entry",
+    description: "দেওয়া তথ্য নির্দিষ্ট format অনুযায়ী entry করতে হবে।",
+    reward: 30,
+    link: "#"
+  },
+  {
+    id: 5,
+    title: "📄 PDF Text",
+    description: "দেওয়া PDF থেকে নির্ভুলভাবে প্রয়োজনীয় text তৈরি করতে হবে।",
+    reward: 70,
     link: "#"
   }
-];
+]
 
 let completedTasks =
   JSON.parse(localStorage.getItem("taskmoon_completed_tasks") || "[]");
