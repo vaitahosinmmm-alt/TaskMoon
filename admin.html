@@ -90,6 +90,22 @@ button{
 </div>
 
 <div id="chatList"></div>
+<div class="card" style="margin-top:15px;">
+  <h3>👥 Users</h3>
+
+  <div id="totalUsers"
+       style="font-size:22px;font-weight:bold;margin:10px 0;">
+    Total Users: —
+  </div>
+
+  <button id="loadUsersBtn" type="button">
+    👥 Load Users
+  </button>
+
+  <div id="usersSection" style="margin-top:10px;"></div>
+</div>
+
+
 
 <script>
 
@@ -325,6 +341,85 @@ function escapeHtml(value){
     .replace(/'/g,"&#039;");
 
 }
+
+
+<script>
+document.getElementById("loadUsersBtn").addEventListener("click", loadUsers);
+
+async function loadUsers(){
+
+  const adminId = document.getElementById("adminId").value.trim();
+
+  if(adminId !== "7136507076"){
+    alert("❌ আগে Admin Login করুন");
+    return;
+  }
+
+  const section = document.getElementById("usersSection");
+
+  section.innerHTML =
+    "<div class='card'>⏳ Loading users...</div>";
+
+  try{
+
+    const response = await fetch(
+      API +
+      "/admin/users?admin_id=" +
+      encodeURIComponent(adminId)
+    );
+
+    const data = await response.json();
+
+    if(!response.ok || !data.success){
+      section.innerHTML =
+        "<div class='card'>❌ " +
+        (data.error || "Server Error") +
+        "</div>";
+      return;
+    }
+
+    document.getElementById("totalUsers").textContent =
+      "👥 Total Users: " + data.total_users;
+
+    if(!data.users || data.users.length === 0){
+      section.innerHTML =
+        "<div class='card'>📭 কোনো User পাওয়া যায়নি।</div>";
+      return;
+    }
+
+    let html = "";
+
+    data.users.forEach((user, index) => {
+
+      html += `
+        <div class="card" style="margin-top:8px;">
+          <b>#${index + 1}</b><br>
+          👤 Name:
+          ${escapeHtml(user.first_name || "No Name")}<br>
+          🔗 Username:
+          ${user.username
+            ? "@" + escapeHtml(user.username)
+            : "No Username"}<br>
+          🆔 User ID:
+          ${escapeHtml(user.user_id)}<br>
+          🕐 Joined:
+          ${escapeHtml(user.created_at || "")}
+        </div>
+      `;
+
+    });
+
+    section.innerHTML = html;
+
+  }catch(error){
+
+    console.error(error);
+
+    section.innerHTML =
+      "<div class='card'>❌ Server-এর সাথে যোগাযোগ করা যাচ্ছে না।</div>";
+  }
+}
+</script>
 
 </script>
 
