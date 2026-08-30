@@ -1,0 +1,10 @@
+*.backup
+*.backup_*
+index_backup*.html
+index_before_tasks.html
+add_islamic.js
+add_tasks.py
+complete_islamic.py
+update_islamic.py
+bot.py
+index.html.before_coming_soon
