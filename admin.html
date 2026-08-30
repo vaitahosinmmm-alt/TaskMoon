@@ -4,14 +4,66 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TaskMoon Admin 🌙</title>
+
 <style>
-body{margin:0;background:#061415;color:#fff;font-family:Arial;padding:16px}
-h1{color:#42e0d1}
-.card{background:#0b2223;border:1px solid #153f40;border-radius:14px;padding:15px;margin:12px 0}
-input,button{width:100%;padding:12px;margin-top:10px;border-radius:9px;border:0;box-sizing:border-box}
-input{background:#102728;color:#fff;border:1px solid #285455}
-button{background:#123f40;color:#fff;font-weight:bold}
-.uid{color:#42e0d1;font-weight:bold}
+body{
+  margin:0;
+  background:#061415;
+  color:#fff;
+  font-family:Arial;
+  padding:16px;
+}
+
+h1{
+  color:#42e0d1;
+}
+
+.card{
+  background:#0b2223;
+  border:1px solid #153f40;
+  border-radius:14px;
+  padding:15px;
+  margin:12px 0;
+}
+
+input,textarea,button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:9px;
+  border:0;
+  box-sizing:border-box;
+}
+
+input,textarea{
+  background:#102728;
+  color:#fff;
+  border:1px solid #285455;
+}
+
+textarea{
+  min-height:80px;
+  resize:vertical;
+}
+
+button{
+  background:#123f40;
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.uid{
+  color:#42e0d1;
+  font-weight:bold;
+}
+
+.reply{
+  background:#0e3031;
+  border-radius:10px;
+  padding:10px;
+  margin-top:10px;
+}
 </style>
 </head>
 
@@ -20,69 +72,74 @@ button{background:#123f40;color:#fff;font-weight:bold}
 <h1>🌙 TaskMoon Admin</h1>
 
 <div class="card">
-<h3>🔐 Admin Login</h3>
+  <h3>🔐 Admin Login</h3>
 
-<input id="adminId" type="number" placeholder="Admin ID">
+  <input
+    id="adminId"
+    type="number"
+    placeholder="Admin ID"
+  >
 
-<button onclick="loadChats()">
-📩 Load Live Chats
-</button>
+  <button id="loadBtn" type="button">
+    📩 Load Live Chats
+  </button>
 </div>
 
 <div id="chatList"></div>
 
 <script>
 
-const API =
-"https://taskmoon-backend.onrender.com";
+const API = "https://taskmoon-backend.onrender.com";
+
+let currentAdminId = "";
+
+document.getElementById("loadBtn").addEventListener("click", loadChats);
+
 
 async function loadChats(){
 
   const adminId =
-    document.getElementById("adminId").value;
+    document.getElementById("adminId").value.trim();
 
   if(adminId !== "7136507076"){
-
     alert("❌ Unauthorized Admin");
     return;
-
   }
+
+  currentAdminId = adminId;
 
   const list =
     document.getElementById("chatList");
 
   list.innerHTML =
-    "<div class='card'>⏳ Loading...</div>";
+    "<div class='card'>⏳ Loading chats...</div>";
 
   try{
 
-    const response =
-      await fetch(
-        API +
-        "/admin/support/chats?admin_id=" +
-        adminId
-      );
+    const response = await fetch(
+      API +
+      "/admin/support/chats?admin_id=" +
+      encodeURIComponent(adminId)
+    );
 
-    const data =
-      await response.json();
+    const data = await response.json();
 
     if(!response.ok){
 
       list.innerHTML =
         "<div class='card'>❌ " +
-        (data.error || "Error") +
+        (data.error || "Server Error") +
         "</div>";
 
       return;
     }
 
-    if(data.length === 0){
+    if(!Array.isArray(data) || data.length === 0){
 
       list.innerHTML =
-        "<div class='card'>📭 এখন কোনো Chat নেই।</div>";
+        "<div class='card'>📭 এখন কোনো Live Chat নেই।</div>";
 
       return;
-
     }
 
     list.innerHTML = data.map(chat => `
@@ -90,27 +147,160 @@ async function loadChats(){
       <div class="card">
 
         <div class="uid">
-          🆔 UID: ${chat.uid}
+          🆔 UID: ${escapeHtml(chat.uid)}
         </div>
 
-        <p>📋 Problem: ${chat.problem}</p>
+        <p>
+          👤 User ID: ${escapeHtml(String(chat.user_id))}
+        </p>
 
-        <p>💬 Message: ${chat.message || "No message"}</p>
+        <p>
+          📋 Problem: ${escapeHtml(chat.problem)}
+        </p>
 
-        <p>🟢 Status: ${chat.status}</p>
+        <p>
+          💬 Message:
+          ${escapeHtml(chat.message || "No message")}
+        </p>
 
-        <small>${chat.created_at}</small>
+        <p>
+          🟢 Status: ${escapeHtml(chat.status)}
+        </p>
+
+        ${
+          chat.admin_reply
+          ?
+          `<div class="reply">
+             ↩️ Admin Reply:<br>
+             ${escapeHtml(chat.admin_reply)}
+           </div>`
+          :
+          ""
+        }
+
+        <small>
+          🕒 ${escapeHtml(chat.created_at)}
+        </small>
+
+        ${
+          chat.status === "open"
+          ?
+          `
+          <textarea
+            id="reply-${chat.id}"
+            placeholder="✍️ এখানে Reply লিখুন..."
+          ></textarea>
+
+          <button
+            type="button"
+            data-chat-id="${chat.id}"
+            class="replyBtn"
+          >
+            📤 Send Reply
+          </button>
+          `
+          :
+          `<p>🔒 Chat Closed</p>`
+        }
 
       </div>
 
     `).join("");
 
+    document.querySelectorAll(".replyBtn").forEach(button => {
+
+      button.addEventListener("click", function(){
+
+        const chatId =
+          Number(this.dataset.chatId);
+
+        sendReply(chatId);
+
+      });
+
+    });
+
   }catch(error){
+
+    console.error(error);
 
     list.innerHTML =
       "<div class='card'>❌ Server connection failed.</div>";
 
   }
+}
+
+
+async function sendReply(chatId){
+
+  const textarea =
+    document.getElementById("reply-" + chatId);
+
+  const reply =
+    textarea.value.trim();
+
+  if(!reply){
+
+    alert("⚠️ আগে Reply লিখুন।");
+    return;
+  }
+
+  try{
+
+    const response = await fetch(
+      API + "/admin/support/reply",
+      {
+        method:"POST",
+
+        headers:{
+          "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify({
+          admin_id:Number(currentAdminId),
+          chat_id:chatId,
+          reply:reply
+        })
+      }
+    );
+
+    const data =
+      await response.json();
+
+    if(!response.ok || !data.success){
+
+      alert(
+        "❌ Reply পাঠানো যায়নি.\n" +
+        (data.error || "Unknown error")
+      );
+
+      return;
+    }
+
+    alert("✅ Admin Reply Sent!");
+
+    loadChats();
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(
+      "❌ Server-এর সাথে যোগাযোগ করা যাচ্ছে না।"
+    );
+
+  }
+}
+
+
+function escapeHtml(value){
+
+  return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
 
 }
 
