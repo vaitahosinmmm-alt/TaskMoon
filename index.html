@@ -1,6 +1,23 @@
 <!DOCTYPE html>
 <html lang="bn">
-<<script src="https://telegram.org/js/telegram-web-app.js"></script>>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+const tg = window.Telegram && window.Telegram.WebApp;
+
+if (tg) {
+  tg.ready();
+  tg.expand();
+}
+
+const tgUser =
+  tg && tg.initDataUnsafe && tg.initDataUnsafe.user
+    ? tg.initDataUnsafe.user
+    : null;
+
+const telegramUserId =
+  tgUser ? tgUser.id : null;
+</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TaskMoon 🌙</title>
@@ -508,16 +525,25 @@ textarea{
 
 <div class="card">
 <h3>🔗 Your Referral Link</h3>
-<p>Telegram account connect হলে এখানে personal referral link থাকবে।</p>
+<p id="referralLinkText">
+Referral link তৈরি হচ্ছে...
+</p>
+
 <br>
-<button onclick="alert('Referral link backend connect হলে automatic তৈরি হবে।')">
+
+<button onclick="copyReferralLink()">
 📋 Copy Referral Link
 </button>
+
+<p id="referralCommission">
+🪙 Referral Commission: 10%
+</p>
+
 </div>
 
 <div class="card">
 <h3>👤 Total Referrals</h3>
-<p>0 successful referrals</p>
+<p id="referralCount">0 successful referrals</p>
 </div>
 
 </div>
@@ -1716,6 +1742,58 @@ document.addEventListener(
   renderTasks
 );
 
+</script>
+
+
+<script>
+function getTaskMoonReferralLink(){
+
+  if (telegramUserId) {
+    return "https://t.me/TaskMoonBD_bot?start=ref_" + telegramUserId;
+  }
+
+  return "Telegram app থেকে খুললে referral link তৈরি হবে।";
+}
+
+
+function showReferralLink(){
+
+  const box =
+    document.getElementById("referralLinkText");
+
+  if(box){
+    box.textContent =
+      getTaskMoonReferralLink();
+  }
+
+}
+
+
+function copyReferralLink(){
+
+  const link =
+    getTaskMoonReferralLink();
+
+  if(!telegramUserId){
+    alert("Telegram App-এর ভিতর থেকে TaskMoon খুলুন। ❤️🌙");
+    return;
+  }
+
+  navigator.clipboard.writeText(link)
+    .then(function(){
+      alert("✅ Referral Link Copied!");
+    })
+    .catch(function(){
+      alert("Link: " + link);
+    });
+
+}
+
+
+document.addEventListener(
+  "DOMContentLoaded",
+  showReferralLink
+);
 </script>
 
 </body>
