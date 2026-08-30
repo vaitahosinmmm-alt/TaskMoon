@@ -1706,7 +1706,7 @@ function startTask(id){
 
 }
 
-function completeTask(id){
+async function completeTask(id){
 
   if(completedTasks.includes(id)){
 
@@ -1721,19 +1721,74 @@ function completeTask(id){
 
   if(!task) return;
 
-  completedTasks.push(id);
+  const telegramUserId =
+    window.Telegram &&
+    window.Telegram.WebApp &&
+    window.Telegram.WebApp.initDataUnsafe &&
+    window.Telegram.WebApp.initDataUnsafe.user
+      ? window.Telegram.WebApp.initDataUnsafe.user.id
+      : null;
 
-  taskCoins += task.reward;
+  if(!telegramUserId){
 
-  saveTaskData();
+    alert("❌ Telegram user পাওয়া যায়নি।");
 
-  renderTasks();
+    return;
 
-  alert(
-    "🎉 Task Complete! +" +
-    task.reward +
-    " Coins"
-  );
+  }
+
+  try {
+
+    const response = await fetch(
+      "https://taskmoon-backend.onrender.com/task/complete",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          user_id: Number(telegramUserId),
+          reward: Number(task.reward)
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if(!response.ok || !data.success){
+
+      alert(
+        "❌ Task complete হয়নি: " +
+        (data.error || "Unknown error")
+      );
+
+      return;
+
+    }
+
+    completedTasks.push(id);
+
+    taskCoins = Number(data.user_coins);
+
+    saveTaskData();
+
+    renderTasks();
+
+    alert(
+      "🎉 Task Complete! +" +
+      task.reward +
+      " Coins"
+    );
+
+  } catch(error) {
+
+    console.error("Task API Error:", error);
+
+    alert(
+      "❌ Backend connection failed!"
+    );
+
+  }
 
 }
 
