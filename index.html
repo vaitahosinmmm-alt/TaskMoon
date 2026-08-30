@@ -2072,11 +2072,165 @@ function sendLiveChatMessage(chatId){
     return;
   }
 
-  alert(
-    "📤 Message পাঠানোর system এখন backend-এর সাথে connect করতে হবে।"
-  );
+  const telegramUser =
+    window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+  if(!telegramUser || !telegramUser.id){
+    alert("⚠️ Telegram App থেকে Support খুলুন।");
+    return;
+  }
+
+  fetch(
+    "https://taskmoon-backend.onrender.com/support/message",
+    {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        user_id:telegramUser.id,
+        chat_id:Number(chatId),
+        message:message
+      })
+    }
+  )
+  .then(response => response.json())
+  .then(data => {
+
+    if(!data.success){
+
+      alert(
+        "❌ Message পাঠানো যায়নি.\n" +
+        (data.error || "Unknown error")
+      );
+
+      return;
+    }
+
+    input.value = "";
+
+    const messages =
+      document.getElementById("liveChatMessages");
+
+    if(messages){
+
+      messages.innerHTML += `
+        <div style="
+          background:#123f40;
+          padding:9px;
+          border-radius:8px;
+          margin-top:8px;
+        ">
+          👤 আপনি: ${escapeHtml(message)}
+        </div>
+      `;
+
+    }
+
+    loadSupportChat(chatId);
+
+  })
+  .catch(error => {
+
+    console.error(error);
+
+    alert(
+      "❌ Server-এর সাথে যোগাযোগ করা যাচ্ছে না।"
+    );
+
+  });
 
 }
+
+
+function loadSupportChat(chatId){
+
+  const telegramUser =
+    window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+  if(!telegramUser || !telegramUser.id){
+    return;
+  }
+
+  fetch(
+    "https://taskmoon-backend.onrender.com/support/chat/" +
+    chatId +
+    "?user_id=" +
+    encodeURIComponent(telegramUser.id)
+  )
+  .then(response => response.json())
+  .then(data => {
+
+    if(!data.success || !data.chat){
+      return;
+    }
+
+    const messages =
+      document.getElementById("liveChatMessages");
+
+    if(!messages){
+      return;
+    }
+
+    let html = "";
+
+    if(data.chat.message){
+
+      html += `
+        <div style="
+          background:#123f40;
+          padding:9px;
+          border-radius:8px;
+          margin-top:8px;
+        ">
+          👤 আপনি: ${escapeHtml(data.chat.message)}
+        </div>
+      `;
+
+    }
+
+    if(data.chat.admin_reply){
+
+      html += `
+        <div style="
+          background:#0b3031;
+          padding:9px;
+          border-radius:8px;
+          margin-top:8px;
+        ">
+          👨‍💼 Admin: ${escapeHtml(data.chat.admin_reply)}
+        </div>
+      `;
+
+    }
+
+    if(!html){
+      html =
+        "🟢 Chat Started!<br>" +
+        "<small>Admin-এর reply-এর জন্য অপেক্ষা করুন।</small>";
+    }
+
+    messages.innerHTML = html;
+
+  })
+  .catch(error => {
+    console.error("Chat refresh error:", error);
+  });
+
+}
+
+
+function escapeHtml(value){
+
+  return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
 </script>
 
 </body>
