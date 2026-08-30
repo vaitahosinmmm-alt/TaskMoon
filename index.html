@@ -2156,7 +2156,7 @@ function loadSupportChat(chatId){
   }
 
   fetch(
-    "https://taskmoon-backend.onrender.com/support/chat/" +
+    "https://taskmoon-backend.onrender.com/support/messages/" +
     chatId +
     "?user_id=" +
     encodeURIComponent(telegramUser.id)
@@ -2164,7 +2164,8 @@ function loadSupportChat(chatId){
   .then(response => response.json())
   .then(data => {
 
-    if(!data.success || !data.chat){
+    if(!data.success){
+      console.error(data.error || "History load failed");
       return;
     }
 
@@ -2177,47 +2178,60 @@ function loadSupportChat(chatId){
 
     let html = "";
 
-    if(data.chat.message){
+    if(data.messages && data.messages.length){
 
-      html += `
-        <div style="
-          background:#123f40;
-          padding:9px;
-          border-radius:8px;
-          margin-top:8px;
-        ">
-          👤 আপনি: ${escapeHtml(data.chat.message)}
-        </div>
-      `;
+      data.messages.forEach(item => {
 
-    }
+        const isAdmin =
+          item.sender === "admin";
 
-    if(data.chat.admin_reply){
+        html += `
+          <div style="
+            background:${isAdmin ? "#0b3031" : "#123f40"};
+            padding:10px;
+            border-radius:10px;
+            margin-top:8px;
+            text-align:${isAdmin ? "left" : "right"};
+          ">
+            <div style="
+              font-size:12px;
+              opacity:.7;
+              margin-bottom:4px;
+            ">
+              ${isAdmin ? "👨‍💼 Admin" : "👤 আপনি"}
+            </div>
 
-      html += `
-        <div style="
-          background:#0b3031;
-          padding:9px;
-          border-radius:8px;
-          margin-top:8px;
-        ">
-          👨‍💼 Admin: ${escapeHtml(data.chat.admin_reply)}
-        </div>
-      `;
+            <div>
+              ${escapeHtml(item.message)}
+            </div>
 
-    }
+            <div style="
+              font-size:10px;
+              opacity:.5;
+              margin-top:4px;
+            ">
+              ${escapeHtml(item.created_at || "")}
+            </div>
+          </div>
+        `;
 
-    if(!html){
+      });
+
+    } else {
+
       html =
         "🟢 Chat Started!<br>" +
-        "<small>Admin-এর reply-এর জন্য অপেক্ষা করুন।</small>";
+        "<small>এখনও কোনো message নেই।</small>";
+
     }
 
     messages.innerHTML = html;
 
+    messages.scrollTop = messages.scrollHeight;
+
   })
   .catch(error => {
-    console.error("Chat refresh error:", error);
+    console.error("Chat history error:", error);
   });
 
 }
