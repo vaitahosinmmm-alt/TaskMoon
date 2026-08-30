@@ -80,6 +80,10 @@ button{
     placeholder="Admin ID"
   >
 
+  <button id="logoutBtn" type="button" style="display:none;">
+    🚪 Logout Admin
+  </button>
+
   <button id="loadBtn" type="button">
     📩 Load Live Chats
   </button>
@@ -93,7 +97,23 @@ const API = "https://taskmoon-backend.onrender.com";
 
 let currentAdminId = "";
 
+const savedAdminId = localStorage.getItem("taskmoon_admin_id");
+
+if(savedAdminId === "7136507076"){
+  document.getElementById("adminId").value = savedAdminId;
+  document.getElementById("logoutBtn").style.display = "block";
+}
+
 document.getElementById("loadBtn").addEventListener("click", loadChats);
+
+document.getElementById("logoutBtn").addEventListener("click", function(){
+  localStorage.removeItem("taskmoon_admin_id");
+  document.getElementById("adminId").value = "";
+  document.getElementById("logoutBtn").style.display = "none";
+  document.getElementById("chatList").innerHTML = "";
+  currentAdminId = "";
+  alert("✅ Admin Logout হয়েছে");
+});
 
 
 async function loadChats(){
@@ -107,6 +127,8 @@ async function loadChats(){
   }
 
   currentAdminId = adminId;
+  localStorage.setItem("taskmoon_admin_id", adminId);
+  document.getElementById("logoutBtn").style.display = "block";
 
   const list =
     document.getElementById("chatList");
