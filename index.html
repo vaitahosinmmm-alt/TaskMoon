@@ -2013,8 +2013,6 @@ function startSupportChat(){
 
     if(box){
 
-      startSupportChatRefresh(data.chat_id);
-
       box.innerHTML = `
         <div class="card">
 
@@ -2062,6 +2060,7 @@ function startSupportChat(){
 
         </div>
       `;
+        startSupportChatRefresh(data.chat_id);
     }
 
   })
