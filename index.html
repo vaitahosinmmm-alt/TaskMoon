@@ -1975,8 +1975,7 @@ function startSupportChat(){
     return;
   }
 
-  const telegramUser =
-    window.Telegram?.WebApp?.initDataUnsafe?.user;
+  const telegramUser = tgUser;
 
   if(!telegramUser || !telegramUser.id){
     alert("⚠️ Telegram App থেকে Support খুলুন।");
@@ -2092,8 +2091,7 @@ function sendLiveChatMessage(chatId){
     return;
   }
 
-  const telegramUser =
-    window.Telegram?.WebApp?.initDataUnsafe?.user;
+  const telegramUser = tgUser;
 
   if(!telegramUser || !telegramUser.id){
     alert("⚠️ Telegram App থেকে Support খুলুন।");
@@ -2165,8 +2163,7 @@ function sendLiveChatMessage(chatId){
 
 function loadSupportChat(chatId){
 
-  const telegramUser =
-    window.Telegram?.WebApp?.initDataUnsafe?.user;
+  const telegramUser = tgUser;
 
   if(!telegramUser || !telegramUser.id){
     return;
@@ -2273,8 +2270,7 @@ function startSupportChatRefresh(chatId){
 
 async function openWithdrawForm(){
 
-  const telegramUser =
-    window.Telegram?.WebApp?.initDataUnsafe?.user;
+  const telegramUser = tgUser;
 
   if(!telegramUser || !telegramUser.id){
     alert("❌ Telegram user পাওয়া যায়নি।");
@@ -2388,8 +2384,7 @@ async function loadTaskMoonUID() {
 
   if (!uidBox) return;
 
-  const telegramUser =
-    window.Telegram?.WebApp?.initDataUnsafe?.user;
+  const telegramUser = tgUser;
 
   if (!telegramUser || !telegramUser.id) {
     uidBox.textContent = "Telegram App থেকে খুলুন";
