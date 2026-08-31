@@ -2381,18 +2381,31 @@ function escapeHtml(value){
 <script>
 async function loadTaskMoonUID() {
   const uidBox = document.getElementById("taskmoonUserUID");
-
   if (!uidBox) return;
 
-  const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  const tg = window.Telegram?.WebApp;
 
-  if (!telegramUser || !telegramUser.id) {
+  if (tg) {
+    tg.ready();
+    tg.expand();
+  }
+
+  let telegramUser = null;
+
+  for (let i = 0; i < 10; i++) {
+    telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+    if (telegramUser?.id) break;
+
+    await new Promise(resolve => setTimeout(resolve, 300));
+  }
+
+  if (!telegramUser?.id) {
     uidBox.textContent = "Telegram App থেকে খুলুন";
     return;
   }
 
   try {
-    // First register/find the user
     const registerResponse = await fetch(
       "https://taskmoon-backend.onrender.com/user/register",
       {
@@ -2425,7 +2438,6 @@ async function loadTaskMoonUID() {
 }
 
 document.addEventListener("DOMContentLoaded", loadTaskMoonUID);
-
 </script>
 
 </body>
