@@ -514,6 +514,14 @@ textarea{
 <div class="coin">Available TaskMoon Coins</div>
 </div>
 
+<div class="card" style="margin-top:15px;text-align:center;">
+  <h3>🆔 My TaskMoon UID</h3>
+  <div id="taskmoonUserUID" style="font-size:22px;font-weight:bold;margin-top:8px;">
+    Loading...
+  </div>
+  <p style="margin-top:6px;">এই UID দিয়েই আপনার account শনাক্ত করা হবে।</p>
+</div>
+
 <div class="card">
 <h3>💸 Withdraw</h3>
 <p>তোমার balance থেকে withdrawal request পাঠাতে পারবে।</p>
@@ -2371,6 +2379,43 @@ function escapeHtml(value){
 
 }
 
+</script>
+
+
+<script>
+async function loadTaskMoonUID() {
+  const uidBox = document.getElementById("taskmoonUserUID");
+
+  if (!uidBox) return;
+
+  const telegramUser =
+    window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+  if (!telegramUser || !telegramUser.id) {
+    uidBox.textContent = "Telegram App থেকে খুলুন";
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      "https://taskmoon-backend.onrender.com/user/" +
+      encodeURIComponent(telegramUser.id)
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.uid) {
+      uidBox.textContent = "UID পাওয়া যায়নি";
+      return;
+    }
+
+    uidBox.textContent = data.uid;
+  } catch (error) {
+    uidBox.textContent = "Server connection failed";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadTaskMoonUID);
 </script>
 
 </body>
