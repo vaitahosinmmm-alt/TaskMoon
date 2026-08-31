@@ -1990,7 +1990,14 @@ function startSupportChat(){
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        user_id: telegramUser.id,
+        user_id: Number(
+            localStorage.getItem("taskmoon_support_user_id") ||
+            (() => {
+              const id = String(Date.now());
+              localStorage.setItem("taskmoon_support_user_id", id);
+              return id;
+            })()
+          ),
         uid: uid,
         problem: problem,
         message: ""
@@ -2105,7 +2112,7 @@ function sendLiveChatMessage(chatId){
         "Content-Type":"application/json"
       },
       body:JSON.stringify({
-        user_id:telegramUser.id,
+        user_id:Number(localStorage.getItem("taskmoon_support_user_id")),
         chat_id:Number(chatId),
         message:message
       })
@@ -2172,7 +2179,7 @@ function loadSupportChat(chatId){
     "https://taskmoon-backend.onrender.com/support/messages/" +
     chatId +
     "?user_id=" +
-    encodeURIComponent(telegramUser.id)
+    encodeURIComponent(Number(localStorage.getItem("taskmoon_support_user_id")))
   )
   .then(response => response.json())
   .then(data => {
