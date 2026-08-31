@@ -518,7 +518,7 @@ textarea{
 <h3>💸 Withdraw</h3>
 <p>তোমার balance থেকে withdrawal request পাঠাতে পারবে।</p>
 <br>
-<button onclick="alert('Withdrawal system backend-এর সাথে connect করা হবে।')">
+<button type="button" onclick="openWithdrawForm()">
 💳 Withdraw Now
 </button>
 </div>
@@ -2261,6 +2261,104 @@ function startSupportChatRefresh(chatId){
   }, 3000);
 }
 
+
+
+async function openWithdrawForm(){
+
+  const telegramUser =
+    window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+  if(!telegramUser || !telegramUser.id){
+    alert("❌ Telegram user পাওয়া যায়নি।");
+    return;
+  }
+
+  const amountText = prompt(
+    "💰 কত coins withdraw করবেন?\nMinimum: 100 coins"
+  );
+
+  if(amountText === null) return;
+
+  const amount = Number(amountText);
+
+  if(!Number.isInteger(amount) || amount < 100){
+    alert("❌ Minimum withdrawal 100 coins.");
+    return;
+  }
+
+  const method = prompt(
+    "💳 Payment Method লিখুন:\n\nbKash অথবা Nagad"
+  );
+
+  if(method === null) return;
+
+  const paymentMethod = method.trim().toLowerCase();
+
+  if(paymentMethod !== "bkash" && paymentMethod !== "nagad"){
+    alert("❌ শুধু bKash অথবা Nagad দেওয়া যাবে।");
+    return;
+  }
+
+  const number = prompt(
+    "📱 আপনার " +
+    (paymentMethod === "bkash" ? "bKash" : "Nagad") +
+    " নম্বর দিন:"
+  );
+
+  if(number === null) return;
+
+  const paymentNumber = number.trim();
+
+  if(!/^01[3-9]\d{8}$/.test(paymentNumber)){
+    alert("❌ সঠিক 11 সংখ্যার বাংলাদেশি নম্বর দিন।");
+    return;
+  }
+
+  try{
+
+    const response = await fetch(
+      "https://taskmoon-backend.onrender.com/withdraw",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          user_id: telegramUser.id,
+          amount: amount,
+          method: paymentMethod,
+          number: paymentNumber
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if(!response.ok || !data.success){
+      alert(
+        "❌ Withdrawal request পাঠানো যায়নি.\n" +
+        (data.error || "Unknown error")
+      );
+      return;
+    }
+
+    alert(
+      "✅ Withdrawal Request Sent!\n\n" +
+      "💰 Amount: " + amount + " coins\n" +
+      "💳 Method: " + paymentMethod.toUpperCase() + "\n" +
+      "📱 Number: " + paymentNumber + "\n" +
+      "🟡 Status: Pending"
+    );
+
+  }catch(error){
+
+    console.error("Withdrawal error:", error);
+
+    alert(
+      "❌ Server-এর সাথে যোগাযোগ করা যাচ্ছে না।"
+    );
+  }
+}
 
 function escapeHtml(value){
 
