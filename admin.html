@@ -79,7 +79,7 @@ button{
     type="number"
     placeholder="Admin ID"
   >
-  <button id="loadBtn" type="button">
+  <button id="loadBtn" type="button" onclick="loadChats()">
     📥 Load Chats
   </button>
 
@@ -121,7 +121,7 @@ if(savedAdminId === "7136507076"){
   document.getElementById("logoutBtn").style.display = "block";
 }
 
-document.getElementById("loadBtn").addEventListener("click", loadChats);
+
 
 document.getElementById("logoutBtn").addEventListener("click", function(){
   localStorage.removeItem("taskmoon_admin_id");
