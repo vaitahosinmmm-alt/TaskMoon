@@ -423,5 +423,78 @@ async function loadUsers(){
 
 </script>
 
+
+<div class="card" style="margin-top:15px;">
+  <h3>🪙 Add Test Coins</h3>
+
+  <input
+    id="testCoinUserId"
+    type="number"
+    placeholder="User ID"
+    style="width:100%;padding:10px;margin:6px 0;"
+  >
+
+  <input
+    id="testCoinAmount"
+    type="number"
+    placeholder="Coins"
+    min="1"
+    style="width:100%;padding:10px;margin:6px 0;"
+  >
+
+  <button class="btn" onclick="addTestCoins()">
+    ➕ Add Test Coins
+  </button>
+
+  <div id="testCoinResult" style="margin-top:10px;"></div>
+</div>
+
+<script>
+async function addTestCoins() {
+  const userId = Number(document.getElementById("testCoinUserId").value);
+  const amount = Number(document.getElementById("testCoinAmount").value);
+  const result = document.getElementById("testCoinResult");
+
+  if (!userId || !amount || amount <= 0) {
+    result.textContent = "❌ User ID এবং Coins সঠিকভাবে দিন";
+    return;
+  }
+
+  result.textContent = "⏳ Adding coins...";
+
+  try {
+    const response = await fetch(
+      API + "/admin/add-coins",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          admin_id: Number(currentAdminId),
+          user_id: userId,
+          amount: amount
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      result.textContent =
+        "❌ " + (data.error || "Coin add failed");
+      return;
+    }
+
+    result.textContent =
+      "✅ Added " + data.added_coins +
+      " coins. Current balance: " +
+      data.user_coins + " Coins";
+  } catch (error) {
+    result.textContent = "❌ Server connection failed";
+  }
+}
+</script>
+
 </body>
 </html>
