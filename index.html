@@ -1974,12 +1974,24 @@ function startSupportChat(){
     alert("📋 আগে সমস্যাটি Select করুন।");
     return;
   }
-    let supportUserId = localStorage.getItem("taskmoon_support_user_id");
 
-    if (!supportUserId) {
-      supportUserId = String(Date.now());
-      localStorage.setItem("taskmoon_support_user_id", supportUserId);
+  const telegramUser =
+    window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+  let supportUserId;
+
+  if(telegramUser && telegramUser.id){
+    supportUserId = Number(telegramUser.id);
+  } else {
+    let saved = localStorage.getItem("taskmoon_support_user_id");
+
+    if(!saved){
+      saved = String(Date.now());
+      localStorage.setItem("taskmoon_support_user_id", saved);
     }
+
+    supportUserId = Number(saved);
+  }
 
   fetch(
     "https://taskmoon-backend.onrender.com/support/chat",
@@ -1989,64 +2001,88 @@ function startSupportChat(){
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        user_id: Number(localStorage.getItem("taskmoon_support_user_id")),
+        user_id: supportUserId,
         uid: uid,
         problem: problem,
         message: ""
       })
     }
   )
-  .then(response => response.json())
-  .then(data => {
+  .then(async response => {
 
-    if(!data.success){
-      alert(
-        "❌ Chat শুরু করা যায়নি.\n" +
-        (data.error || "Unknown error")
+    const data = await response.json();
+
+    if(!response.ok || !data.success){
+      throw new Error(
+        data.error || "Chat শুরু করা যায়নি"
       );
-      return;
     }
 
     const box =
       document.getElementById("supportChatBox");
 
-    if(box){
+    if(!box){
+      throw new Error("Support Chat Box পাওয়া যায়নি");
+    }
 
-      box.innerHTML = `
-        <div class="card">
+    box.style.display = "block";
 
-          <h3>💬 TaskMoon Live Chat</h3>
+    box.innerHTML = `
+      <div class="card">
 
-          <p>🆔 UID: ${uid}</p>
-          <p>📋 Problem: ${problem}</p>
+        <h3>💬 TaskMoon Support</h3>
 
-          <div
-            id="liveChatMessages"
-            style="
-              background:#071819;
-              border:1px solid #153f40;
-              border-radius:10px;
-              padding:12px;
-              min-height:120px;
-              margin:10px 0;
-            "
-          >
-            🟢 Chat Started!<br>
-            <small>Admin-এর reply-এর জন্য অপেক্ষা করুন।</small>
+        <p>🆔 UID: ${escapeHtml(uid)}</p>
+        <p>📋 Problem: ${escapeHtml(problem)}</p>
+
+        <div
+          id="liveChatMessages"
+          style="
+            background:#071819;
+            border:1px solid #153f40;
+            border-radius:12px;
+            padding:12px;
+            min-height:180px;
+            max-height:350px;
+            overflow-y:auto;
+            margin:12px 0;
+          "
+        >
+          <div style="
+            text-align:center;
+            opacity:.7;
+            padding:25px 5px;
+          ">
+            🟢 Chat Connected
+            <br>
+            <small>Admin-এর reply এখানে দেখা যাবে।</small>
           </div>
+        </div>
+
+        <div style="
+          display:flex;
+          gap:8px;
+          align-items:center;
+        ">
 
           <input
             id="liveChatMessage"
             type="text"
             placeholder="আপনার message লিখুন..."
+            autocomplete="off"
             style="
-              width:100%;
+              flex:1;
               padding:13px;
               border-radius:10px;
               border:1px solid #153f40;
               background:#071819;
               color:#fff;
-              box-sizing:border-box;
+              outline:none;
+            "
+            onkeydown="
+              if(event.key === 'Enter'){
+                sendLiveChatMessage(${data.chat_id});
+              }
             "
           >
 
@@ -2054,25 +2090,37 @@ function startSupportChat(){
             class="btn"
             onclick="sendLiveChatMessage(${data.chat_id})"
           >
-            📤 Send Message
+            📤
           </button>
 
         </div>
-      `;
-        startSupportChatRefresh(data.chat_id);
-    }
+
+      </div>
+    `;
+
+    localStorage.setItem(
+      "taskmoon_support_user_id",
+      String(supportUserId)
+    );
+
+    localStorage.setItem(
+      "taskmoon_support_chat_id",
+      String(data.chat_id)
+    );
+
+    startSupportChatRefresh(data.chat_id);
 
   })
   .catch(error => {
 
-    console.error(error);
+    console.error("Support Chat Error:", error);
 
     alert(
-      "❌ Server-এর সাথে যোগাযোগ করা যাচ্ছে না।"
+      "❌ Server-এর সাথে যোগাযোগ করা যাচ্ছে না।\n\n" +
+      error.message
     );
 
   });
-
 }
 
 
@@ -2085,100 +2133,88 @@ function sendLiveChatMessage(chatId){
     input?.value.trim();
 
   if(!message){
-    alert("✍️ আগে message লিখুন।");
     return;
   }
-    const supportUserId =
-      localStorage.getItem("taskmoon_support_user_id");
 
-    if (!supportUserId) {
-      alert("⚠️ আগে Live Chat শুরু করুন।");
-      return;
-    }
+  const supportUserId =
+    Number(
+      localStorage.getItem("taskmoon_support_user_id")
+    );
+
+  if(!supportUserId){
+    alert("⚠️ আগে Live Chat শুরু করুন।");
+    return;
+  }
 
   fetch(
     "https://taskmoon-backend.onrender.com/support/message",
     {
       method:"POST",
+
       headers:{
         "Content-Type":"application/json"
       },
+
       body:JSON.stringify({
-        user_id:Number(supportUserId),
+        user_id:supportUserId,
         chat_id:Number(chatId),
         message:message
       })
     }
   )
-  .then(response => response.json())
-  .then(data => {
+  .then(async response => {
 
-    if(!data.success){
+    const data = await response.json();
 
-      alert(
-        "❌ Message পাঠানো যায়নি.\n" +
-        (data.error || "Unknown error")
+    if(!response.ok || !data.success){
+      throw new Error(
+        data.error || "Message পাঠানো যায়নি"
       );
-
-      return;
     }
 
     input.value = "";
-
-    const messages =
-      document.getElementById("liveChatMessages");
-
-    if(messages){
-
-      messages.innerHTML += `
-        <div style="
-          background:#123f40;
-          padding:9px;
-          border-radius:8px;
-          margin-top:8px;
-        ">
-          👤 আপনি: ${escapeHtml(message)}
-        </div>
-      `;
-
-    }
 
     loadSupportChat(chatId);
 
   })
   .catch(error => {
 
-    console.error(error);
+    console.error("Send Message Error:", error);
 
     alert(
-      "❌ Server-এর সাথে যোগাযোগ করা যাচ্ছে না।"
+      "❌ Message পাঠানো যায়নি।\n\n" +
+      error.message
     );
 
   });
-
 }
 
 
 function loadSupportChat(chatId){
-    const supportUserId =
-      localStorage.getItem("taskmoon_support_user_id");
 
-    if (!supportUserId) {
-      return;
-    }
+  const supportUserId =
+    Number(
+      localStorage.getItem("taskmoon_support_user_id")
+    );
+
+  if(!supportUserId){
+    return;
+  }
 
   fetch(
     "https://taskmoon-backend.onrender.com/support/messages/" +
-    chatId +
+    Number(chatId) +
     "?user_id=" +
-    encodeURIComponent(Number(supportUserId))
+    encodeURIComponent(supportUserId)
   )
-  .then(response => response.json())
-  .then(data => {
+  .then(async response => {
 
-    if(!data.success){
-      console.error(data.error || "History load failed");
-      return;
+    const data = await response.json();
+
+    if(!response.ok || !data.success){
+      throw new Error(
+        data.error || "Chat history load failed"
+      );
     }
 
     const messages =
@@ -2199,31 +2235,41 @@ function loadSupportChat(chatId){
 
         html += `
           <div style="
-            background:${isAdmin ? "#0b3031" : "#123f40"};
-            padding:10px;
-            border-radius:10px;
-            margin-top:8px;
-            text-align:${isAdmin ? "left" : "right"};
+            display:flex;
+            justify-content:${isAdmin ? "flex-start" : "flex-end"};
+            margin-top:9px;
           ">
-            <div style="
-              font-size:12px;
-              opacity:.7;
-              margin-bottom:4px;
-            ">
-              ${isAdmin ? "👨‍💼 Admin" : "👤 আপনি"}
-            </div>
-
-            <div>
-              ${escapeHtml(item.message)}
-            </div>
 
             <div style="
-              font-size:10px;
-              opacity:.5;
-              margin-top:4px;
+              max-width:82%;
+              padding:10px 12px;
+              border-radius:14px;
+              background:${isAdmin ? "#0b3031" : "#123f40"};
+              text-align:left;
             ">
-              ${escapeHtml(item.created_at || "")}
+
+              <div style="
+                font-size:12px;
+                opacity:.75;
+                margin-bottom:4px;
+              ">
+                ${isAdmin ? "👨‍💼 Admin" : "👤 আপনি"}
+              </div>
+
+              <div>
+                ${escapeHtml(item.message)}
+              </div>
+
+              <div style="
+                font-size:10px;
+                opacity:.5;
+                margin-top:5px;
+              ">
+                ${escapeHtml(item.created_at || "")}
+              </div>
+
             </div>
+
           </div>
         `;
 
@@ -2231,39 +2277,67 @@ function loadSupportChat(chatId){
 
     } else {
 
-      html =
-        "🟢 Chat Started!<br>" +
-        "<small>এখনও কোনো message নেই।</small>";
+      html = `
+        <div style="
+          text-align:center;
+          opacity:.65;
+          padding:30px 5px;
+        ">
+          🟢 Chat Started!
+          <br>
+          <small>এখনও কোনো message নেই।</small>
+        </div>
+      `;
 
     }
 
     messages.innerHTML = html;
 
-    messages.scrollTop = messages.scrollHeight;
+    messages.scrollTop =
+      messages.scrollHeight;
 
   })
   .catch(error => {
-    console.error("Chat history error:", error);
-  });
 
+    console.error(
+      "Chat history error:",
+      error
+    );
+
+  });
 }
 
 
 let supportChatRefreshTimer = null;
 
+
 function startSupportChatRefresh(chatId){
 
   if(supportChatRefreshTimer){
-    clearInterval(supportChatRefreshTimer);
+    clearInterval(
+      supportChatRefreshTimer
+    );
   }
 
   loadSupportChat(chatId);
 
-  supportChatRefreshTimer = setInterval(() => {
-    loadSupportChat(chatId);
-  }, 3000);
+  supportChatRefreshTimer =
+    setInterval(() => {
+      loadSupportChat(chatId);
+    }, 3000);
 }
 
+
+function escapeHtml(value){
+
+  return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
 
 
 async function openWithdrawForm(){
