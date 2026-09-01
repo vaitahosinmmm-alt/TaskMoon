@@ -1980,31 +1980,27 @@ function startSupportChat(){
 
   let supportUserId;
 
+  if(telegramUser && telegramUser.id){
     supportUserId = Number(telegramUser.id);
-} else {  supportUserId = Number(telegramUser.id);
-} else {
-  supportUserId = Number(telegramUser.id);
-  localStorage.setItem(
-    "taskmoon_support_user_id",
-    String(supportUserId)
-  );
-} else {
-if(telegramUser && telegramUser.id){
-  supportUserId = Number(telegramUser.id);
-  localStorage.setItem(
-    "taskmoon_support_user_id",
-    String(supportUserId)
-  );
-} else {
-    let saved = localStorage.getItem("taskmoon_support_user_id");
+  } else {
+    let saved =
+      localStorage.getItem("taskmoon_support_user_id");
 
     if(!saved){
       saved = String(Date.now());
-      localStorage.setItem("taskmoon_support_user_id", saved);
+      localStorage.setItem(
+        "taskmoon_support_user_id",
+        saved
+      );
     }
 
     supportUserId = Number(saved);
   }
+
+  localStorage.setItem(
+    "taskmoon_support_user_id",
+    String(supportUserId)
+  );
 
   fetch(
     "https://taskmoon-backend.onrender.com/support/chat",
@@ -2035,7 +2031,9 @@ if(telegramUser && telegramUser.id){
       document.getElementById("supportChatBox");
 
     if(!box){
-      throw new Error("Support Chat Box পাওয়া যায়নি");
+      throw new Error(
+        "Support Chat Box পাওয়া যায়নি"
+      );
     }
 
     box.style.display = "block";
@@ -2046,6 +2044,7 @@ if(telegramUser && telegramUser.id){
         <h3>💬 TaskMoon Support</h3>
 
         <p>🆔 UID: ${escapeHtml(uid)}</p>
+
         <p>📋 Problem: ${escapeHtml(problem)}</p>
 
         <div
@@ -2058,271 +2057,53 @@ if(telegramUser && telegramUser.id){
             min-height:180px;
             max-height:350px;
             overflow-y:auto;
-            margin:12px 0;
+            margin:10px 0;
           "
         >
-          <div style="
-            text-align:center;
-            opacity:.7;
-            padding:25px 5px;
-          ">
-            🟢 Chat Connected
-            <br>
-            <small>Admin-এর reply এখানে দেখা যাবে।</small>
-          </div>
+          <small>Loading messages...</small>
         </div>
 
-        <div style="
-          display:flex;
-          gap:8px;
-          align-items:center;
-        ">
+        <textarea
+          id="supportMessageInput"
+          placeholder="আপনার message লিখুন..."
+          style="
+            width:100%;
+            min-height:80px;
+            padding:12px;
+            border-radius:10px;
+            border:1px solid #153f40;
+            background:#071819;
+            color:#fff;
+            box-sizing:border-box;
+          "
+        ></textarea>
 
-          <input
-            id="liveChatMessage"
-            type="text"
-            placeholder="আপনার message লিখুন..."
-            autocomplete="off"
-            style="
-              flex:1;
-              padding:13px;
-              border-radius:10px;
-              border:1px solid #153f40;
-              background:#071819;
-              color:#fff;
-              outline:none;
-            "
-            onkeydown="
-              if(event.key === 'Enter'){
-                sendLiveChatMessage(${data.chat_id});
-              }
-            "
-          >
-
-          <button
-            class="btn"
-            onclick="sendLiveChatMessage(${data.chat_id})"
-          >
-            📤
-          </button>
-
-        </div>
+        <button
+          class="btn"
+          onclick="sendSupportMessage(${Number(data.chat_id)})"
+        >
+          📤 Send Message
+        </button>
 
       </div>
     `;
 
-    localStorage.setItem(
-      "taskmoon_support_user_id",
-      String(supportUserId)
+    startSupportChatRefresh(
+      Number(data.chat_id)
     );
-
-    localStorage.setItem(
-      "taskmoon_support_chat_id",
-      String(data.chat_id)
-    );
-
-    startSupportChatRefresh(data.chat_id);
 
   })
   .catch(error => {
 
-    console.error("Support Chat Error:", error);
+    console.error("Support chat error:", error);
 
     alert(
-      "❌ Server-এর সাথে যোগাযোগ করা যাচ্ছে না।\n\n" +
+      "❌ Chat শুরু করা যায়নি।\n" +
       error.message
     );
 
   });
 }
-
-
-function sendLiveChatMessage(chatId){
-
-  const input =
-    document.getElementById("liveChatMessage");
-
-  const message =
-    input?.value.trim();
-
-  if(!message){
-    return;
-  }
-
-  const supportUserId =
-    Number(
-      localStorage.getItem("taskmoon_support_user_id")
-    );
-
-  if(!supportUserId){
-    alert("⚠️ আগে Live Chat শুরু করুন।");
-    return;
-  }
-
-  fetch(
-    "https://taskmoon-backend.onrender.com/support/message",
-    {
-      method:"POST",
-
-      headers:{
-        "Content-Type":"application/json"
-      },
-
-      body:JSON.stringify({
-        user_id:supportUserId,
-        chat_id:Number(chatId),
-        message:message
-      })
-    }
-  )
-  .then(async response => {
-
-    const data = await response.json();
-
-    if(!response.ok || !data.success){
-      throw new Error(
-        data.error || "Message পাঠানো যায়নি"
-      );
-    }
-
-    input.value = "";
-
-    loadSupportChat(chatId);
-
-  })
-  .catch(error => {
-
-    console.error("Send Message Error:", error);
-
-    alert(
-      "❌ Message পাঠানো যায়নি।\n\n" +
-      error.message
-    );
-
-  });
-}
-
-
-function loadSupportChat(chatId){
-
-  const supportUserId =
-    Number(
-      localStorage.getItem("taskmoon_support_user_id")
-    );
-
-  if(!supportUserId){
-    return;
-  }
-
-  fetch(
-    "https://taskmoon-backend.onrender.com/support/messages/" +
-    Number(chatId) +
-    "?user_id=" +
-    encodeURIComponent(supportUserId)
-  )
-  .then(async response => {
-
-    const data = await response.json();
-
-    if(!response.ok || !data.success){
-      throw new Error(
-        data.error || "Chat history load failed"
-      );
-    }
-
-    const messages =
-      document.getElementById("liveChatMessages");
-
-    if(!messages){
-      return;
-    }
-
-    let html = "";
-
-    if(data.messages && data.messages.length){
-
-      data.messages.forEach(item => {
-
-        const isAdmin =
-          item.sender === "admin";
-
-        html += `
-          <div style="
-            display:flex;
-            justify-content:${isAdmin ? "flex-start" : "flex-end"};
-            margin-top:9px;
-          ">
-
-            <div style="
-              max-width:82%;
-              padding:10px 12px;
-              border-radius:14px;
-              background:${isAdmin ? "#0b3031" : "#123f40"};
-              text-align:left;
-            ">
-
-              <div style="
-                font-size:12px;
-                opacity:.75;
-                margin-bottom:4px;
-              ">
-                ${isAdmin ? "👨‍💼 Admin" : "👤 আপনি"}
-              </div>
-
-              <div>
-                ${escapeHtml(item.message)}
-              </div>
-
-              <div style="
-                font-size:10px;
-                opacity:.5;
-                margin-top:5px;
-              ">
-                ${escapeHtml(item.created_at || "")}
-              </div>
-
-            </div>
-
-          </div>
-        `;
-
-      });
-
-    } else {
-
-      html = `
-        <div style="
-          text-align:center;
-          opacity:.65;
-          padding:30px 5px;
-        ">
-          🟢 Chat Started!
-          <br>
-          <small>এখনও কোনো message নেই।</small>
-        </div>
-      `;
-
-    }
-
-    messages.innerHTML = html;
-
-    messages.scrollTop =
-      messages.scrollHeight;
-
-  })
-  .catch(error => {
-
-    console.error(
-      "Chat history error:",
-      error
-    );
-
-  });
-}
-
-
-let supportChatRefreshTimer = null;
-
 
 function startSupportChatRefresh(chatId){
 
@@ -2524,6 +2305,5 @@ async function loadTaskMoonUID() {
 
 document.addEventListener("DOMContentLoaded", loadTaskMoonUID);
 </script>
-
 </body>
 </html>
