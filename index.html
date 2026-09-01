@@ -1974,13 +1974,12 @@ function startSupportChat(){
     alert("📋 আগে সমস্যাটি Select করুন।");
     return;
   }
+    let supportUserId = localStorage.getItem("taskmoon_support_user_id");
 
-  const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-
-  if(!telegramUser || !telegramUser.id){
-    alert("⚠️ Telegram App থেকে Support খুলুন।");
-    return;
-  }
+    if (!supportUserId) {
+      supportUserId = String(Date.now());
+      localStorage.setItem("taskmoon_support_user_id", supportUserId);
+    }
 
   fetch(
     "https://taskmoon-backend.onrender.com/support/chat",
@@ -1990,9 +1989,7 @@ function startSupportChat(){
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        user_id: Number(
-            localStorage.getItem("taskmoon_support_user_id")
-          ),
+        user_id: Number(localStorage.getItem("taskmoon_support_user_id")),
         uid: uid,
         problem: problem,
         message: ""
@@ -2091,13 +2088,13 @@ function sendLiveChatMessage(chatId){
     alert("✍️ আগে message লিখুন।");
     return;
   }
+    const supportUserId =
+      localStorage.getItem("taskmoon_support_user_id");
 
-  const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-
-  if(!telegramUser || !telegramUser.id){
-    alert("⚠️ Telegram App থেকে Support খুলুন।");
-    return;
-  }
+    if (!supportUserId) {
+      alert("⚠️ আগে Live Chat শুরু করুন।");
+      return;
+    }
 
   fetch(
     "https://taskmoon-backend.onrender.com/support/message",
@@ -2163,12 +2160,12 @@ function sendLiveChatMessage(chatId){
 
 
 function loadSupportChat(chatId){
+    const supportUserId =
+      localStorage.getItem("taskmoon_support_user_id");
 
-  const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-
-  if(!telegramUser || !telegramUser.id){
-    return;
-  }
+    if (!supportUserId) {
+      return;
+    }
 
   fetch(
     "https://taskmoon-backend.onrender.com/support/messages/" +
