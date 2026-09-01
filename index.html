@@ -1980,9 +1980,22 @@ function startSupportChat(){
 
   let supportUserId;
 
-  if(telegramUser && telegramUser.id){
     supportUserId = Number(telegramUser.id);
-  } else {
+} else {  supportUserId = Number(telegramUser.id);
+} else {
+  supportUserId = Number(telegramUser.id);
+  localStorage.setItem(
+    "taskmoon_support_user_id",
+    String(supportUserId)
+  );
+} else {
+if(telegramUser && telegramUser.id){
+  supportUserId = Number(telegramUser.id);
+  localStorage.setItem(
+    "taskmoon_support_user_id",
+    String(supportUserId)
+  );
+} else {
     let saved = localStorage.getItem("taskmoon_support_user_id");
 
     if(!saved){
