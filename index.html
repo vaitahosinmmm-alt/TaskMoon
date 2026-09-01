@@ -2174,6 +2174,80 @@ async function sendSupportMessage(chatId){
   }
 }
 
+
+async function loadSupportChat(chatId){
+  const supportUserId = Number(
+    localStorage.getItem("taskmoon_support_user_id")
+  );
+
+  if(!supportUserId){
+    console.error("Support user ID not found");
+    return;
+  }
+
+  try{
+    const response = await fetch(
+      "https://taskmoon-backend.onrender.com/support/messages/" +
+      Number(chatId) +
+      "?user_id=" +
+      encodeURIComponent(supportUserId)
+    );
+
+    const data = await response.json();
+
+    if(!response.ok || !data.success){
+      throw new Error(
+        data.error || "Chat history load failed"
+      );
+    }
+
+    const messages = document.getElementById("liveChatMessages");
+
+    if(!messages){
+      return;
+    }
+
+    if(!data.messages || !data.messages.length){
+      messages.innerHTML =
+        '<small>এখনও কোনো message নেই।</small>';
+      return;
+    }
+
+    let html = "";
+
+    data.messages.forEach(item => {
+      const isAdmin = item.sender === "admin";
+
+      html += `
+        <div style="
+          display:flex;
+          justify-content:${isAdmin ? "flex-start" : "flex-end"};
+          margin:8px 0;
+        ">
+          <div style="
+            max-width:80%;
+            padding:10px 12px;
+            border-radius:12px;
+            background:${isAdmin ? "#123536" : "#075e54"};
+            color:#fff;
+          ">
+            <div style="font-size:12px;opacity:.7;margin-bottom:4px;">
+              ${isAdmin ? "👨‍💼 Support" : "👤 You"}
+            </div>
+            <div>${escapeHtml(item.message || "")}</div>
+          </div>
+        </div>
+      `;
+    });
+
+    messages.innerHTML = html;
+    messages.scrollTop = messages.scrollHeight;
+
+  }catch(error){
+    console.error("Chat history error:", error);
+  }
+}
+
 function startSupportChatRefresh(chatId){
 
   if(supportChatRefreshTimer){
