@@ -1991,12 +1991,7 @@ function startSupportChat(){
       },
       body: JSON.stringify({
         user_id: Number(
-            localStorage.getItem("taskmoon_support_user_id") ||
-            (() => {
-              const id = String(Date.now());
-              localStorage.setItem("taskmoon_support_user_id", id);
-              return id;
-            })()
+            localStorage.getItem("taskmoon_support_user_id")
           ),
         uid: uid,
         problem: problem,
@@ -2112,7 +2107,7 @@ function sendLiveChatMessage(chatId){
         "Content-Type":"application/json"
       },
       body:JSON.stringify({
-        user_id:Number(localStorage.getItem("taskmoon_support_user_id")),
+        user_id:Number(supportUserId),
         chat_id:Number(chatId),
         message:message
       })
@@ -2179,7 +2174,7 @@ function loadSupportChat(chatId){
     "https://taskmoon-backend.onrender.com/support/messages/" +
     chatId +
     "?user_id=" +
-    encodeURIComponent(Number(localStorage.getItem("taskmoon_support_user_id")))
+    encodeURIComponent(Number(supportUserId))
   )
   .then(response => response.json())
   .then(data => {
