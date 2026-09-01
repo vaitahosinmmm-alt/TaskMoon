@@ -2105,6 +2105,75 @@ function startSupportChat(){
   });
 }
 
+
+async function sendSupportMessage(chatId){
+  const input = document.getElementById("supportMessageInput");
+  const message = input?.value.trim();
+
+  if(!message){
+    alert("✍️ আগে message লিখুন।");
+    return;
+  }
+
+  let supportUserId = Number(
+    localStorage.getItem("taskmoon_support_user_id")
+  );
+
+  if(!supportUserId){
+    const telegramUser =
+      window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+    if(telegramUser?.id){
+      supportUserId = Number(telegramUser.id);
+      localStorage.setItem(
+        "taskmoon_support_user_id",
+        String(supportUserId)
+      );
+    }
+  }
+
+  if(!supportUserId){
+    alert("❌ User ID পাওয়া যায়নি।");
+    return;
+  }
+
+  try{
+    const response = await fetch(
+      "https://taskmoon-backend.onrender.com/support/message",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          user_id: supportUserId,
+          chat_id: Number(chatId),
+          message: message
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if(!response.ok || !data.success){
+      throw new Error(
+        data.error || "Message পাঠানো যায়নি"
+      );
+    }
+
+    input.value = "";
+    loadSupportChat(Number(chatId));
+
+  }catch(error){
+    console.error("Support message error:", error);
+
+    alert(
+      "❌ Message পাঠানো যায়নি।\n" +
+      error.message
+    );
+  }
+}
+
 function startSupportChatRefresh(chatId){
 
   if(supportChatRefreshTimer){
