@@ -2541,8 +2541,10 @@ async function loadTaskMoonUID() {
 
 document.addEventListener(
   "DOMContentLoaded",
-  function() {
-    loadTaskMoonUID();
+  async function() {
+    await loadTaskMoonUID();
+    await refreshTaskMoonBalance();
+    updateTaskBalance();
   }
 );
 
