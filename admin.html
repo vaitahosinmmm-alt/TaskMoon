@@ -402,6 +402,10 @@ async function loadUsers(){
             : "No Username"}<br>
           🆔 User ID:
           ${escapeHtml(user.user_id)}<br>
+          🔰 UID:
+          ${escapeHtml(user.uid || "No UID")}<br>
+          🪙 Current Balance:
+          ${escapeHtml(String(user.coins ?? 0))} Coins<br>
           🕐 Joined:
           ${escapeHtml(user.created_at || "")}
         </div>
