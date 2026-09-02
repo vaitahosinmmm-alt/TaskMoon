@@ -2440,6 +2440,13 @@ async function loadTaskMoonUID() {
 
     uidBox.textContent = registerData.uid;
 
+    // Sync real balance from PostgreSQL
+    if (typeof registerData.coins !== "undefined") {
+      taskCoins = Number(registerData.coins) || 0;
+      saveTaskData();
+      updateTaskBalance();
+    }
+
   } catch (error) {
     console.error("UID registration error:", error);
     uidBox.textContent = "Server connection failed";
