@@ -2441,6 +2441,23 @@ async function loadTaskMoonUID() {
     }
 
     uidBox.textContent = registerData.uid;
+  try {
+    const balanceResponse = await fetch(
+      "https://taskmoon-backend.onrender.com/user/" + telegramUser.id
+    );
+
+    const balanceData = await balanceResponse.json();
+
+    if (balanceResponse.ok && typeof balanceData.coins !== "undefined") {
+      taskCoins = Number(balanceData.coins) || 0;
+      saveTaskData();
+      updateTaskBalance();
+      console.log("TaskMoon balance synced:", taskCoins);
+    }
+  } catch (balanceError) {
+    console.error("Balance loading error:", balanceError);
+  }
+
 
     // Sync real balance from PostgreSQL
     if (typeof registerData.coins !== "undefined") {
