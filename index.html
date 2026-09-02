@@ -2670,70 +2670,56 @@ document.addEventListener(
 );
 
 async function refreshTaskMoonBalance() {
-
   const tgUser =
     window.Telegram?.WebApp?.initDataUnsafe?.user;
 
-  if (!tgUser?.id) {
-    return;
-  }
+  if (!tgUser?.id) return;
 
   try {
-
     const response = await fetch(
       "https://taskmoon-backend.onrender.com/user/" +
       tgUser.id +
       "?t=" + Date.now(),
       {
-        cache: "no-store"
+        cache: "no-store",
+        headers: {
+          "Cache-Control": "no-cache"
+        }
       }
     );
 
-    const data =
-      await response.json();
+    if (!response.ok) return;
 
-    if (
-      response.ok &&
-      typeof data.coins !== "undefined"
-    ) {
+    const data = await response.json();
 
-      taskCoins =
-        Number(data.coins) || 0;
+    if (typeof data.coins !== "undefined") {
+      taskCoins = Number(data.coins) || 0;
 
-      saveTaskData();
+      localStorage.setItem(
+        "taskmoon_task_coins",
+        String(taskCoins)
+      );
 
       updateTaskBalance();
 
-      console.log(
-        "🔄 Balance refreshed:",
-        taskCoins
-      );
+      console.log("SERVER BALANCE:", taskCoins);
     }
-
   } catch (error) {
-
-    console.error(
-      "Balance refresh error:",
-      error
-    );
+    console.error("Balance refresh error:", error);
   }
 }
 
-document.addEventListener(
-  "visibilitychange",
-  function() {
-
-    if (!document.hidden) {
-      refreshTaskMoonBalance();
-    }
-
+document.addEventListener("visibilitychange", function() {
+  if (!document.hidden) {
+    refreshTaskMoonBalance();
   }
-);
+});
 
-setInterval(
-  refreshTaskMoonBalance,
-  10000
-);
+window.addEventListener("focus", function() {
+  refreshTaskMoonBalance();
+});
+
+setInterval(refreshTaskMoonBalance, 5000);
 
 </script>
 </body>
