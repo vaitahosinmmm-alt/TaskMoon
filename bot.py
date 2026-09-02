@@ -1,595 +1,1152 @@
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TaskMoon 🌙</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
-body{background:#061415;color:#fff;min-height:100vh}
-.app{max-width:520px;margin:auto;min-height:100vh;background:#071819;padding-bottom:80px}
-header{padding:20px;background:linear-gradient(135deg,#0b292a,#07191a);border-bottom:1px solid #164445}
-.logo{display:flex;align-items:center;gap:12px}
-.logo-icon{width:48px;height:48px;border-radius:15px;background:#103536;display:flex;align-items:center;justify-content:center;font-size:25px}
-.logo h1{color:#42e0d1;font-size:23px}
-.logo p{color:#779898;font-size:12px;margin-top:3px}
-.balance-card{margin:16px;padding:20px;border-radius:20px;background:linear-gradient(135deg,#0d3334,#0a2425);border:1px solid #195152}
-.balance-card small{color:#88a9a9}
-.balance{font-size:30px;font-weight:bold;color:#42e0d1;margin:7px 0}
-.coin{color:#8aabab;font-size:12px}
-.container{padding:0 16px}
-.section{display:none}
-.section.active{display:block}
-.title{display:flex;justify-content:space-between;align-items:center;margin:20px 0 13px}
-.title h2{font-size:19px}
-.title span{color:#42e0d1;font-size:12px}
-.card{background:#0b2223;border:1px solid #153f40;border-radius:17px;padding:16px;margin-bottom:12px}
-.card h3{font-size:16px;margin-bottom:7px}
-.card p{color:#8da8a8;font-size:13px;line-height:1.55}
-.task-top{display:flex;justify-content:space-between;gap:10px}
-.reward{color:#42e0d1;font-weight:bold;white-space:nowrap}
-.tags{display:flex;gap:7px;margin:12px 0}
-.tag{background:#103031;color:#8eb0af;padding:5px 9px;border-radius:7px;font-size:10px}
-button{width:100%;padding:12px;border:0;border-radius:11px;background:#27cfc0;color:#031212;font-weight:bold;cursor:pointer}
-.secondary{background:#123334;color:#b5cccc;margin-top:8px}
-.menu-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}
-.menu-card{padding:18px 13px;border-radius:17px;background:#0b2223;border:1px solid #153f40;cursor:pointer}
-.menu-card .icon{font-size:25px;margin-bottom:9px}
-.menu-card h3{font-size:14px}
-.menu-card p{color:#789797;font-size:11px;margin-top:4px}
-.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;height:72px;background:#091d1e;border-top:1px solid #153d3e;display:grid;grid-template-columns:repeat(5,1fr);z-index:10}
-.nav button{background:transparent;color:#6d8c8c;border-radius:0;font-size:10px;padding:7px 2px}
-.nav button div{font-size:20px;margin-bottom:3px}
-.nav button.active{color:#42e0d1}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.78);display:none;align-items:flex-end;justify-content:center;z-index:20}
-.modal.show{display:flex}
-.modal-box{width:100%;max-width:520px;background:#0a2021;border:1px solid #194849;border-radius:22px 22px 0 0;padding:22px}
-.modal-box h2{margin-bottom:9px}
-.modal-box p{color:#91aaaa;font-size:13px;line-height:1.6;white-space:pre-line;margin-bottom:15px}
-textarea{width:100%;height:110px;background:#061516;color:white;border:1px solid #1a4546;border-radius:11px;padding:12px;outline:none;resize:none}
-.close{margin-top:8px}
-.prayer{display:flex;justify-content:space-between;padding:14px;margin-bottom:8px;background:#0b2223;border:1px solid #153f40;border-radius:13px}
-.prayer span:first-child{color:#b9cccc}
-.prayer span:last-child{color:#42e0d1;font-weight:bold}
-.arabic{font-size:25px;line-height:2;text-align:right;direction:rtl;color:#d6eeee;margin:15px 0}
-.note{padding:12px;background:#0d292a;border-left:3px solid #42e0d1;border-radius:8px;color:#9db5b5;font-size:12px;line-height:1.6}
-</style>
-</head>
-
-<body>
-<div class="app">
-
-<header>
-<div class="logo">
-<div class="logo-icon">🌙</div>
-<div>
-<h1>TaskMoon</h1>
-<p>Earn • Complete • Grow</p>
-</div>
-</div>
-</header>
-
-<section id="home" class="section active">
-
-<div class="balance-card">
-<small>Current Balance</small>
-<div class="balance">0 🪙</div>
-<div class="coin">TaskMoon Coins</div>
-</div>
-
-<div class="container">
-
-<div class="title"><h2>⚡ Quick Menu</h2></div>
-
-<div class="menu-grid">
-
-<div class="menu-card" onclick="showSection('tasks')">
-<div class="icon">📋</div>
-<h3>Tasks</h3>
-<p>Complete & earn</p>
-</div>
-
-<div class="menu-card" onclick="showSection('wallet')">
-<div class="icon">💰</div>
-<h3>Wallet</h3>
-<p>Balance & withdraw</p>
-</div>
-
-<div class="menu-card" onclick="showSection('refer')">
-<div class="icon">👥</div>
-<h3>Refer</h3>
-<p>Invite & earn</p>
-</div>
-
-<div class="menu-card" onclick="showSection('islamic')">
-<div class="icon">🕌</div>
-<h3>Islamic</h3>
-<p>Learn & remember</p>
-</div>
-
-</div>
-
-<div class="title"><h2>🔥 Featured Tasks</h2></div>
-
-<div class="card">
-<div class="task-top">
-<h3>🖼️ Background Remove</h3>
-<span class="reward">+50 🪙</span>
-</div>
-<p>ছবির background remove করে পরিষ্কার PNG তৈরি করুন।</p>
-</div>
-
-<div class="card">
-<div class="task-top">
-<h3>⌨️ বাংলা Text Typing</h3>
-<span class="reward">+80 🪙</span>
-</div>
-<p>দেওয়া ছবি বা PDF দেখে বাংলা text টাইপ করুন।</p>
-</div>
-
-</div>
-</section>
-
-<section id="tasks" class="section">
-<div class="container">
-<div class="title"><h2>📋 Available Tasks</h2><span>Earn Coins</span></div>
-<div id="taskList"></div>
-</div>
-</section>
-
-<section id="wallet" class="section">
-<div class="container">
-
-<div class="title"><h2>💰 My Wallet</h2></div>
-
-<div class="balance-card">
-<small>Total Balance</small>
-<div class="balance">0 🪙</div>
-<div class="coin">Available TaskMoon Coins</div>
-</div>
-
-<div class="card">
-<h3>💸 Withdraw</h3>
-<p>তোমার balance থেকে withdrawal request পাঠাতে পারবে।</p>
-<br>
-<button onclick="alert('Withdrawal system backend-এর সাথে connect করা হবে।')">💳 Withdraw Now</button>
-</div>
-
-<div class="title"><h2>📜 Transaction</h2></div>
-
-<div class="card">
-<p>কোনো transaction এখনো নেই।</p>
-</div>
-
-</div>
-</section>
-
-<section id="refer" class="section">
-<div class="container">
-
-<div class="title"><h2>👥 Referral</h2></div>
-
-<div class="balance-card">
-<small>Referral Bonus</small>
-<div class="balance">0 🪙</div>
-<div class="coin">Per successful referral</div>
-</div>
+import telebot
+from telebot import types
+import sqlite3
+
+# ==============================
+# 🔐 BOT CONFIG
+# ==============================
+
+BOT_TOKEN = "8965586086:AAHmNMQQlo8pAIu7zcZ2Byys0zha_boed90"
+ADMIN_ID = 7346014474
+
+bot = telebot.TeleBot(BOT_TOKEN, parse_mode="HTML")
+DB = "taskmoon.db"
+
+
+# ==============================
+# DATABASE
+# ==============================
+
+def connect():
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def setup_database():
+    conn = connect()
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            user_id INTEGER PRIMARY KEY,
+            username TEXT,
+            balance REAL DEFAULT 0
+        )
+    """)
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS tasks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            description TEXT NOT NULL,
+            reward REAL DEFAULT 0,
+            status TEXT DEFAULT 'active'
+        )
+    """)
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS submissions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task_id INTEGER,
+            user_id INTEGER,
+            proof TEXT,
+            status TEXT DEFAULT 'pending'
+        )
+    """)
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS withdrawals (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            amount REAL,
+            method TEXT,
+            account TEXT,
+            status TEXT DEFAULT 'pending'
+        )
+    """)
+
+    conn.commit()
+    conn.close()
+
+
+setup_database()
+
+
+# ==============================
+# USER
+# ==============================
+
+def add_user(user):
+    conn = connect()
+
+    conn.execute(
+        "INSERT OR IGNORE INTO users(user_id, username) VALUES (?, ?)",
+        (user.id, user.username or "")
+    )
+
+    conn.commit()
+    conn.close()
+
+
+def main_menu():
+    keyboard = types.InlineKeyboardMarkup()
+
+    keyboard.add(
+        types.InlineKeyboardButton(
+            "🚀 Open TaskMoon App",
+            web_app=types.WebAppInfo(
+                url="https://vaitahosinmmm-alt.github.io/TaskMoon/"
+            )
+        )
+    )
+
+    keyboard.add(
+        types.InlineKeyboardButton(
+            "📋 Tasks",
+            callback_data="tasks"
+        ),
+        types.InlineKeyboardButton(
+            "💰 Wallet",
+            callback_data="wallet"
+        )
+    )
+
+    keyboard.add(
+        types.InlineKeyboardButton(
+            "👥 Refer",
+            callback_data="refer"
+        ),
+        types.InlineKeyboardButton(
+            "💸 Withdraw",
+            callback_data="withdraw"
+        )
+    )
+
+    keyboard.add(
+        types.InlineKeyboardButton(
+            "📜 History",
+            callback_data="history"
+        ),
+        types.InlineKeyboardButton(
+            "ℹ️ Help",
+            callback_data="help"
+        )
+    )
+
+    return keyboard
+
+
+# ==============================
+# START
+# ==============================
+
+@bot.message_handler(commands=["start"])
+def start(message):
+
+    add_user(message.from_user)
+
+    bot.send_message(
+        message.chat.id,
+        "🌙 <b>Welcome to TaskMoon!</b>\n\n"
+        "🎯 কাজ সম্পন্ন করুন\n"
+        "💰 Reward Earn করুন\n"
+        "💸 Balance Withdraw করুন\n\n"
+        "নিচের Menu থেকে একটি অপশন নির্বাচন করুন।",
+        reply_markup=main_menu()
+    )
+
+
+# ==============================
+# TASK LIST
+# ==============================
+
+@bot.message_handler(func=lambda message: message.text == "📋 Tasks")
+def show_tasks(message):
+
+    add_user(message.from_user)
+
+    conn = connect()
+
+    tasks = conn.execute(
+        "SELECT * FROM tasks WHERE status='active' ORDER BY id DESC"
+    ).fetchall()
+
+    conn.close()
+
+    if not tasks:
+        bot.send_message(
+            message.chat.id,
+            "📭 <b>এই মুহূর্তে কোনো Task নেই।</b>"
+        )
+        return
+
+    for task in tasks:
+
+        keyboard = types.InlineKeyboardMarkup()
+
+        keyboard.add(
+            types.InlineKeyboardButton(
+                "📤 Submit Proof",
+                callback_data=f"submit_{task['id']}"
+            )
+        )
+
+        text = (
+            f"🌙 <b>{task['title']}</b>\n\n"
+            f"📝 {task['description']}\n\n"
+            f"💰 Reward: <b>{task['reward']}</b>"
+        )
+
+        bot.send_message(
+            message.chat.id,
+            text,
+            reply_markup=keyboard
+        )
+
+
+# ==============================
+# SUBMIT PROOF
+# ==============================
+
+@bot.callback_query_handler(
+    func=lambda call: call.data.startswith("submit_")
+)
+def submit_start(call):
+
+    task_id = int(call.data.split("_")[1])
 
-<div class="card">
-<h3>🔗 Your Referral Link</h3>
-<p>Telegram account connect হলে এখানে personal referral link থাকবে।</p>
-<br>
-<button onclick="alert('Referral link backend connect হলে automatic তৈরি হবে।')">📋 Copy Referral Link</button>
-</div>
+    bot.answer_callback_query(call.id)
+
+    msg = bot.send_message(
+        call.message.chat.id,
+        "📤 <b>Task Proof পাঠান</b>\n\n"
+        "আপনার কাজের Screenshot অথবা Text পাঠান।"
+    )
 
-<div class="card">
-<h3>👤 Total Referrals</h3>
-<p>0 successful referrals</p>
-</div>
+    bot.register_next_step_handler(
+        msg,
+        save_proof,
+        task_id
+    )
+
 
-</div>
-</section>
+def save_proof(message, task_id):
 
-<section id="islamic" class="section">
-<div class="container">
+    add_user(message.from_user)
 
-<div class="title"><h2>🕌 Islamic</h2><span>🌙</span></div>
+    if message.content_type == "photo":
+        proof = message.photo[-1].file_id
+    else:
+        proof = message.text or "Proof"
 
-<div class="menu-grid">
+    conn = connect()
 
-<div class="menu-card" onclick="showIslamic('prayer')">
-<div class="icon">🕐</div>
-<h3>নামাজের সময়</h3>
-<p>Location অনুযায়ী</p>
-</div>
-
-<div class="menu-card" onclick="showIslamic('names')">
-<div class="icon">99️⃣</div>
-<h3>আল্লাহর ৯৯ নাম</h3>
-<p>নাম ও অর্থ</p>
-</div>
-
-<div class="menu-card" onclick="showIslamic('ayat')">
-<div class="icon">📜</div>
-<h3>আয়াতুল কুরসি</h3>
-<p>আরবি ও অর্থ</p>
-</div>
-
-<div class="menu-card" onclick="showIslamic('namaz')">
-<div class="icon">🧎</div>
-<h3>নামাজ শেখা</h3>
-<p>ধাপে ধাপে</p>
-</div>
-
-<div class="menu-card" onclick="showIslamic('surah')">
-<div class="icon">📖</div>
-<h3>সূরা সমূহ</h3>
-<p>সূরা তালিকা</p>
-</div>
-
-<div class="menu-card" onclick="showIslamic('dua')">
-<div class="icon">📿</div>
-<h3>যিকির ও দোয়া</h3>
-<p>প্রয়োজনীয় দোয়া</p>
-</div>
-
-</div>
-
-<div id="islamicContent"></div>
-
-</div>
-</section>
-
-<nav class="nav">
-
-<button class="active" onclick="showSection('home',this)">
-<div>🏠</div>Home
-</button>
-
-<button onclick="showSection('tasks',this)">
-<div>📋</div>Tasks
-</button>
-
-<button onclick="showSection('wallet',this)">
-<div>💰</div>Wallet
-</button>
-
-<button onclick="showSection('refer',this)">
-<div>👥</div>Refer
-</button>
-
-<button onclick="showSection('islamic',this)">
-<div>🕌</div>Islamic
-</button>
-
-</nav>
-
-</div>
+    conn.execute(
+        """
+        INSERT INTO submissions(task_id, user_id, proof)
+        VALUES (?, ?, ?)
+        """,
+        (
+            task_id,
+            message.from_user.id,
+            proof
+        )
+    )
 
-<div class="modal" id="taskModal">
-<div class="modal-box">
+    conn.commit()
+    conn.close()
 
-<h2 id="modalTitle"></h2>
-<p id="modalDescription"></p>
+    bot.send_message(
+        message.chat.id,
+        "✅ <b>Proof Submitted!</b>\n\n"
+        "Admin review করার পর Reward যোগ হবে।",
+        reply_markup=main_menu()
+    )
 
-<textarea id="proof" placeholder="কাজের proof / উত্তর এখানে লিখুন..."></textarea>
+    bot.send_message(
+        ADMIN_ID,
+        "📨 <b>New Task Proof</b>\n\n"
+        f"👤 User ID: <code>{message.from_user.id}</code>\n"
+        f"🎯 Task ID: <code>{task_id}</code>"
+    )
 
-<br><br>
 
-<button onclick="submitTask()">📤 Submit Task</button>
-<button class="secondary close" onclick="closeModal()">✕ Close</button>
+# ==============================
+# WALLET
+# ==============================
 
-</div>
-</div>
+@bot.message_handler(func=lambda message: message.text == "💰 Wallet")
+def wallet(message):
 
-<script>
+    add_user(message.from_user)
 
-const tasks=[
+    conn = connect()
 
-{
-id:1,
-title:"🖼️ Background Remove",
-reward:50,
-category:"Image Editing",
-limit:"1 বার",
-description:"দেওয়া ছবির background remove করে পরিষ্কার PNG ছবি তৈরি করতে হবে। কাজ শেষ হলে proof জমা দিতে হবে।"
-},
+    user = conn.execute(
+        "SELECT balance FROM users WHERE user_id=?",
+        (message.from_user.id,)
+    ).fetchone()
 
-{
-id:2,
-title:"⌨️ বাংলা Text Typing",
-reward:80,
-category:"Typing",
-limit:"1 বার",
-description:"দেওয়া ছবি বা PDF দেখে নির্ভুলভাবে বাংলা text টাইপ করতে হবে।"
-},
+    conn.close()
 
-{
-id:3,
-title:"✂️ Image Crop & Resize",
-reward:40,
-category:"Image Editing",
-limit:"2 বার",
-description:"দেওয়া ছবিকে নির্দেশিত size অনুযায়ী crop ও resize করতে হবে।"
-},
+    balance = user["balance"] if user else 0
 
-{
-id:4,
-title:"📝 Data Entry",
-reward:60,
-category:"Data Entry",
-limit:"1 বার",
-description:"দেওয়া তথ্য নির্দিষ্ট format অনুযায়ী entry করতে হবে।"
-},
+    bot.send_message(
+        message.chat.id,
+        "💰 <b>TaskMoon Wallet</b>\n\n"
+        f"💎 Balance: <b>{balance:.2f}</b>"
+    )
 
-{
-id:5,
-title:"📄 PDF → Text",
-reward:100,
-category:"Typing",
-limit:"1 বার",
-description:"দেওয়া PDF থেকে প্রয়োজনীয় text নির্ভুলভাবে লিখে জমা দিতে হবে।"
-},
 
-{
-id:6,
-title:"🔤 বাংলা / English Typing",
-reward:70,
-category:"Typing",
-limit:"1 বার",
-description:"দেওয়া content দেখে বাংলা অথবা English typing সম্পন্ন করতে হবে।"
-}
+# ==============================
+# REFERRAL
+# ==============================
 
-];
+@bot.message_handler(func=lambda message: message.text == "👥 Refer")
+def referral(message):
 
-let selectedTask=null;
+    add_user(message.from_user)
 
-function showSection(id,btn){
+    me = bot.get_me()
 
-document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));
+    link = (
+        f"https://t.me/{me.username}"
+        f"?start=ref_{message.from_user.id}"
+    )
 
-document.getElementById(id).classList.add("active");
+    bot.send_message(
+        message.chat.id,
+        "👥 <b>Referral System</b>\n\n"
+        "🔗 আপনার Referral Link:\n\n"
+        f"<code>{link}</code>"
+    )
 
-document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
 
-if(btn) btn.classList.add("active");
+# ==============================
+# WITHDRAW
+# ==============================
 
-window.scrollTo(0,0);
+@bot.message_handler(func=lambda message: message.text == "💸 Withdraw")
+def withdraw(message):
 
-}
+    add_user(message.from_user)
 
-function loadTasks(){
+    conn = connect()
 
-const list=document.getElementById("taskList");
+    user = conn.execute(
+        "SELECT balance FROM users WHERE user_id=?",
+        (message.from_user.id,)
+    ).fetchone()
 
-list.innerHTML="";
+    conn.close()
 
-tasks.forEach(task=>{
+    balance = user["balance"] if user else 0
 
-const div=document.createElement("div");
+    if balance <= 0:
 
-div.className="card";
+        bot.send_message(
+            message.chat.id,
+            "❌ <b>আপনার Wallet-এ কোনো Balance নেই।</b>"
+        )
 
-div.innerHTML=`
+        return
 
-<div class="task-top">
-<h3>${task.title}</h3>
-<span class="reward">+${task.reward} 🪙</span>
-</div>
+    msg = bot.send_message(
+        message.chat.id,
+        f"💰 আপনার Balance: <b>{balance:.2f}</b>\n\n"
+        "💸 কত টাকা Withdraw করতে চান?"
+    )
 
-<p>${task.description}</p>
+    bot.register_next_step_handler(
+        msg,
+        withdraw_amount
+    )
 
-<div class="tags">
-<span class="tag">${task.category}</span>
-<span class="tag">Limit: ${task.limit}</span>
-</div>
 
-<button onclick="openTask(${task.id})">🚀 Take Task</button>
+def withdraw_amount(message):
 
-`;
+    try:
+        amount = float(message.text)
 
-list.appendChild(div);
+    except:
 
-});
+        bot.send_message(
+            message.chat.id,
+            "❌ সঠিক Amount লিখুন।"
+        )
 
-}
+        return
 
-function openTask(id){
+    conn = connect()
 
-selectedTask=tasks.find(x=>x.id===id);
+    user = conn.execute(
+        "SELECT balance FROM users WHERE user_id=?",
+        (message.from_user.id,)
+    ).fetchone()
 
-document.getElementById("modalTitle").innerText=selectedTask.title;
+    if not user or amount <= 0 or amount > user["balance"]:
 
-document.getElementById("modalDescription").innerText=
-selectedTask.description+
-"\n\nReward: "+selectedTask.reward+" Coins";
+        conn.close()
 
-document.getElementById("proof").value="";
+        bot.send_message(
+            message.chat.id,
+            "❌ আপনার Balance যথেষ্ট নেই।"
+        )
 
-document.getElementById("taskModal").classList.add("show");
+        return
 
-}
+    conn.close()
 
-function closeModal(){
+    msg = bot.send_message(
+        message.chat.id,
+        "💳 Payment Method লিখুন:\n\n"
+        "যেমন: bKash / Nagad / USDT"
+    )
 
-document.getElementById("taskModal").classList.remove("show");
+    bot.register_next_step_handler(
+        msg,
+        withdraw_method,
+        amount
+    )
 
-}
 
-function submitTask(){
+def withdraw_method(message, amount):
 
-const proof=document.getElementById("proof").value.trim();
+    method = message.text
 
-if(!proof){
+    msg = bot.send_message(
+        message.chat.id,
+        "📱 আপনার Payment Number / Address পাঠান।"
+    )
 
-alert("⚠️ আগে proof লিখুন।");
-return;
+    bot.register_next_step_handler(
+        msg,
+        withdraw_account,
+        amount,
+        method
+    )
 
-}
 
-alert("✅ Task submitted!\n\nAdmin verification-এর পর reward যোগ হবে।");
+def withdraw_account(message, amount, method):
 
-closeModal();
+    account = message.text
 
-}
+    conn = connect()
 
-function showIslamic(type){
+    conn.execute(
+        """
+        INSERT INTO withdrawals(
+            user_id,
+            amount,
+            method,
+            account
+        )
+        VALUES (?, ?, ?, ?)
+        """,
+        (
+            message.from_user.id,
+            amount,
+            method,
+            account
+        )
+    )
 
-const box=document.getElementById("islamicContent");
+    conn.execute(
+        "UPDATE users SET balance=balance-? WHERE user_id=?",
+        (
+            amount,
+            message.from_user.id
+        )
+    )
 
-if(type==="prayer"){
+    conn.commit()
+    conn.close()
 
-box.innerHTML=`
+    bot.send_message(
+        message.chat.id,
+        "✅ <b>Withdrawal Request Submitted!</b>\n\n"
+        "Admin review করবেন।",
+        reply_markup=main_menu()
+    )
 
-<div class="title"><h2>🕐 আজকের নামাজ</h2></div>
+    bot.send_message(
+        ADMIN_ID,
+        "💸 <b>New Withdrawal Request</b>\n\n"
+        f"👤 User: <code>{message.from_user.id}</code>\n"
+        f"💰 Amount: <b>{amount}</b>\n"
+        f"💳 Method: <b>{method}</b>\n"
+        f"📱 Account: <code>{account}</code>"
+    )
 
-<div class="note">
-📍 User-এর location অনুযায়ী নামাজের সময় automatic update করার জন্য prayer-time system connect করা হবে।
-</div>
 
-<br>
+# ==============================
+# HISTORY
+# ==============================
 
-<div class="prayer"><span>ফজর</span><span>--:--</span></div>
-<div class="prayer"><span>যোহর</span><span>--:--</span></div>
-<div class="prayer"><span>আসর</span><span>--:--</span></div>
-<div class="prayer"><span>মাগরিব</span><span>--:--</span></div>
-<div class="prayer"><span>এশা</span><span>--:--</span></div>
+@bot.message_handler(func=lambda message: message.text == "📜 History")
+def history(message):
 
-`;
+    conn = connect()
 
-}
+    submissions = conn.execute(
+        """
+        SELECT * FROM submissions
+        WHERE user_id=?
+        ORDER BY id DESC
+        LIMIT 10
+        """,
+        (message.from_user.id,)
+    ).fetchall()
 
-else if(type==="names"){
+    withdrawals = conn.execute(
+        """
+        SELECT * FROM withdrawals
+        WHERE user_id=?
+        ORDER BY id DESC
+        LIMIT 10
+        """,
+        (message.from_user.id,)
+    ).fetchall()
 
-box.innerHTML=`
+    conn.close()
 
-<div class="title"><h2>99️⃣ আল্লাহর ৯৯ নাম</h2></div>
+    text = "📜 <b>TaskMoon History</b>\n\n"
 
-<div class="card">
-<h3>الرَّحْمَنُ — Ar-Rahman</h3>
-<p>পরম দয়ালু</p>
-</div>
+    text += "🎯 <b>Tasks</b>\n"
 
-<div class="card">
-<h3>الرَّحِيمُ — Ar-Raheem</h3>
-<p>অতি দয়াশীল</p>
-</div>
+    if submissions:
 
-<div class="card">
-<h3>الْمَلِكُ — Al-Malik</h3>
-<p>সর্বময় অধিপতি</p>
-</div>
+        for item in submissions:
 
-<div class="card">
-<p>বাকি নামগুলো সম্পূর্ণ তালিকা হিসেবে যুক্ত করা হবে।</p>
-</div>
+            text += (
+                f"#{item['id']} — "
+                f"{item['status']}\n"
+            )
 
-`;
+    else:
 
-}
+        text += "No task history.\n"
 
-else if(type==="ayat"){
+    text += "\n💸 <b>Withdrawals</b>\n"
 
-box.innerHTML=`
+    if withdrawals:
 
-<div class="title"><h2>📜 আয়াতুল কুরসি</h2></div>
+        for item in withdrawals:
 
-<div class="card">
+            text += (
+                f"#{item['id']} — "
+                f"{item['amount']} — "
+                f"{item['status']}\n"
+            )
 
-<div class="arabic">
-اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ
-</div>
+    else:
 
-<p>
-আল্লাহ, তিনি ছাড়া কোনো উপাস্য নেই। তিনি চিরঞ্জীব, সমস্ত সৃষ্টির ধারক।
-</p>
+        text += "No withdrawal history."
 
-</div>
+    bot.send_message(
+        message.chat.id,
+        text
+    )
 
-`;
 
-}
+# ==============================
+# HELP
+# ==============================
 
-else if(type==="namaz"){
+@bot.message_handler(func=lambda message: message.text == "ℹ️ Help")
+def help_menu(message):
 
-box.innerHTML=`
+    bot.send_message(
+        message.chat.id,
+        "🌙 <b>TaskMoon Help</b>\n\n"
+        "📋 Tasks — Available Task দেখুন\n"
+        "💰 Wallet — Balance দেখুন\n"
+        "👥 Refer — Referral Link\n"
+        "💸 Withdraw — Withdrawal Request\n"
+        "📜 History — আপনার History"
+    )
 
-<div class="title"><h2>🧎 নামাজ শেখার নিয়ম</h2></div>
 
-<div class="card">
-<h3>১. অজু</h3>
-<p>নামাজের আগে সঠিকভাবে অজু করতে হবে।</p>
-</div>
+# ==============================
+# ADMIN PANEL
+# ==============================
 
-<div class="card">
-<h3>২. নিয়ত</h3>
-<p>নির্দিষ্ট নামাজের নিয়ত করে কিবলামুখী হয়ে দাঁড়াতে হবে।</p>
-</div>
+@bot.message_handler(commands=["admin"])
+def admin_panel(message):
 
-<div class="card">
-<h3>৩. তাকবির</h3>
-<p>আল্লাহু আকবার বলে নামাজ শুরু করতে হবে।</p>
-</div>
+    if message.from_user.id != ADMIN_ID:
 
-<div class="card">
-<h3>৪. কিয়াম, রুকু ও সিজদা</h3>
-<p>নামাজের নিয়ম অনুযায়ী কিয়াম, রুকু ও সিজদা সম্পন্ন করতে হবে।</p>
-</div>
+        bot.send_message(
+            message.chat.id,
+            "❌ আপনি Admin নন।"
+        )
 
-`;
+        return
 
-}
+    keyboard = types.InlineKeyboardMarkup()
 
-else if(type==="surah"){
+    keyboard.add(
+        types.InlineKeyboardButton(
+            "➕ Add Task",
+            callback_data="admin_add"
+        )
+    )
 
-box.innerHTML=`
+    keyboard.add(
+        types.InlineKeyboardButton(
+            "📨 Pending Proof",
+            callback_data="admin_proof"
+        )
+    )
 
-<div class="title"><h2>📖 সূরা সমূহ</h2></div>
+    keyboard.add(
+        types.InlineKeyboardButton(
+            "💸 Withdrawals",
+            callback_data="admin_withdraw"
+        )
+    )
 
-<div class="card"><h3>সূরা আল-ফাতিহা</h3><p>৭ আয়াত</p></div>
-<div class="card"><h3>সূরা আল-ইখলাস</h3><p>৪ আয়াত</p></div>
-<div class="card"><h3>সূরা আল-ফালাক</h3><p>৫ আয়াত</p></div>
-<div class="card"><h3>সূরা আন-নাস</h3><p>৬ আয়াত</p></div>
+    bot.send_message(
+        message.chat.id,
+        "👨‍💻 <b>TaskMoon Admin Panel</b>\n\n"
+        "নিচের অপশন নির্বাচন করুন।",
+        reply_markup=keyboard
+    )
 
-`;
 
-}
+# ==============================
+# ADD TASK
+# ==============================
 
-else if(type==="dua"){
+@bot.callback_query_handler(
+    func=lambda call: call.data == "admin_add"
+)
+def admin_add(call):
 
-box.innerHTML=`
+    if call.from_user.id != ADMIN_ID:
+        return
 
-<div class="title"><h2>📿 যিকির ও দোয়া</h2></div>
+    bot.answer_callback_query(call.id)
 
-<div class="card">
-<h3>সুবহানাল্লাহ</h3>
-<p>আল্লাহ পবিত্র ও মহিমান্বিত।</p>
-</div>
+    msg = bot.send_message(
+        ADMIN_ID,
+        "➕ Task Title লিখুন:"
+    )
 
-<div class="card">
-<h3>আলহামদুলিল্লাহ</h3>
-<p>সমস্ত প্রশংসা আল্লাহর জন্য।</p>
-</div>
+    bot.register_next_step_handler(
+        msg,
+        add_title
+    )
 
-<div class="card">
-<h3>আল্লাহু আকবার</h3>
-<p>আল্লাহ সর্বশ্রেষ্ঠ।</p>
-</div>
 
-<div class="card">
-<h3>আস্তাগফিরুল্লাহ</h3>
-<p>আমি আল্লাহর কাছে ক্ষমা চাই।</p>
-</div>
+def add_title(message):
 
-`;
+    if message.from_user.id != ADMIN_ID:
+        return
 
-}
+    msg = bot.send_message(
+        ADMIN_ID,
+        "📝 Task Description লিখুন:"
+    )
 
-}
+    bot.register_next_step_handler(
+        msg,
+        add_description,
+        message.text
+    )
 
-loadTasks();
 
-</script>
+def add_description(message, title):
 
-</body>
-</html>
+    if message.from_user.id != ADMIN_ID:
+        return
+
+    msg = bot.send_message(
+        ADMIN_ID,
+        "💰 Reward কত হবে?\n\n"
+        "উদাহরণ: 10"
+    )
+
+    bot.register_next_step_handler(
+        msg,
+        add_reward,
+        title,
+        message.text
+    )
+
+
+def add_reward(message, title, description):
+
+    if message.from_user.id != ADMIN_ID:
+        return
+
+    try:
+
+        reward = float(message.text)
+
+    except:
+
+        bot.send_message(
+            ADMIN_ID,
+            "❌ Reward সংখ্যা হতে হবে।"
+        )
+
+        return
+
+    conn = connect()
+
+    conn.execute(
+        """
+        INSERT INTO tasks(
+            title,
+            description,
+            reward
+        )
+        VALUES (?, ?, ?)
+        """,
+        (
+            title,
+            description,
+            reward
+        )
+    )
+
+    conn.commit()
+    conn.close()
+
+    bot.send_message(
+        ADMIN_ID,
+        "✅ <b>Task Added Successfully!</b>"
+    )
+
+
+# ==============================
+# PENDING PROOFS
+# ==============================
+
+@bot.callback_query_handler(
+    func=lambda call: call.data == "admin_proof"
+)
+def pending_proofs(call):
+
+    if call.from_user.id != ADMIN_ID:
+        return
+
+    bot.answer_callback_query(call.id)
+
+    conn = connect()
+
+    rows = conn.execute(
+        """
+        SELECT * FROM submissions
+        WHERE status='pending'
+        ORDER BY id ASC
+        """
+    ).fetchall()
+
+    conn.close()
+
+    if not rows:
+
+        bot.send_message(
+            ADMIN_ID,
+            "📭 No pending proofs."
+        )
+
+        return
+
+    for row in rows:
+
+        keyboard = types.InlineKeyboardMarkup()
+
+        keyboard.row(
+            types.InlineKeyboardButton(
+                "✅ Approve",
+                callback_data=f"approve_{row['id']}"
+            ),
+            types.InlineKeyboardButton(
+                "❌ Reject",
+                callback_data=f"reject_{row['id']}"
+            )
+        )
+
+        bot.send_message(
+            ADMIN_ID,
+            "📨 <b>Pending Proof</b>\n\n"
+            f"🆔 Submission: <code>{row['id']}</code>\n"
+            f"👤 User: <code>{row['user_id']}</code>\n"
+            f"🎯 Task: <code>{row['task_id']}</code>\n\n"
+            f"📄 Proof:\n<code>{row['proof']}</code>",
+            reply_markup=keyboard
+        )
+
+
+# ==============================
+# APPROVE
+# ==============================
+
+@bot.callback_query_handler(
+    func=lambda call: call.data.startswith("approve_")
+)
+def approve(call):
+
+    if call.from_user.id != ADMIN_ID:
+        return
+
+    submission_id = int(
+        call.data.split("_")[1]
+    )
+
+    conn = connect()
+
+    row = conn.execute(
+        """
+        SELECT submissions.*, tasks.reward
+        FROM submissions
+        JOIN tasks
+        ON submissions.task_id=tasks.id
+        WHERE submissions.id=?
+        AND submissions.status='pending'
+        """,
+        (submission_id,)
+    ).fetchone()
+
+    if not row:
+
+        conn.close()
+
+        bot.answer_callback_query(
+            call.id,
+            "Already processed."
+        )
+
+        return
+
+    conn.execute(
+        """
+        UPDATE submissions
+        SET status='approved'
+        WHERE id=?
+        """,
+        (submission_id,)
+    )
+
+    conn.execute(
+        """
+        UPDATE users
+        SET balance=balance+?
+        WHERE user_id=?
+        """,
+        (
+            row["reward"],
+            row["user_id"]
+        )
+    )
+
+    conn.commit()
+    conn.close()
+
+    bot.answer_callback_query(
+        call.id,
+        "Approved!"
+    )
+
+    bot.send_message(
+        row["user_id"],
+        "🎉 <b>Task Approved!</b>\n\n"
+        f"💰 Reward Added: <b>{row['reward']}</b>"
+    )
+
+    bot.edit_message_reply_markup(
+        ADMIN_ID,
+        call.message.message_id,
+        reply_markup=None
+    )
+
+
+# ==============================
+# REJECT
+# ==============================
+
+@bot.callback_query_handler(
+    func=lambda call: call.data.startswith("reject_")
+)
+def reject(call):
+
+    if call.from_user.id != ADMIN_ID:
+        return
+
+    submission_id = int(
+        call.data.split("_")[1]
+    )
+
+    conn = connect()
+
+    row = conn.execute(
+        """
+        SELECT * FROM submissions
+        WHERE id=?
+        AND status='pending'
+        """,
+        (submission_id,)
+    ).fetchone()
+
+    if not row:
+
+        conn.close()
+
+        bot.answer_callback_query(
+            call.id,
+            "Already processed."
+        )
+
+        return
+
+    conn.execute(
+        """
+        UPDATE submissions
+        SET status='rejected'
+        WHERE id=?
+        """,
+        (submission_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    bot.answer_callback_query(
+        call.id,
+        "Rejected!"
+    )
+
+    bot.send_message(
+        row["user_id"],
+        "❌ <b>Your Task Proof was rejected.</b>"
+    )
+
+    bot.edit_message_reply_markup(
+        ADMIN_ID,
+        call.message.message_id,
+        reply_markup=None
+    )
+
+
+# ==============================
+# ADMIN WITHDRAWALS
+# ==============================
+
+@bot.callback_query_handler(
+    func=lambda call: call.data == "admin_withdraw"
+)
+def admin_withdraw(call):
+
+    if call.from_user.id != ADMIN_ID:
+        return
+
+    bot.answer_callback_query(call.id)
+
+    conn = connect()
+
+    rows = conn.execute(
+        """
+        SELECT * FROM withdrawals
+        WHERE status='pending'
+        ORDER BY id ASC
+        """
+    ).fetchall()
+
+    conn.close()
+
+    if not rows:
+
+        bot.send_message(
+            ADMIN_ID,
+            "📭 No pending withdrawals."
+        )
+
+        return
+
+    for row in rows:
+
+        keyboard = types.InlineKeyboardMarkup()
+
+        keyboard.row(
+            types.InlineKeyboardButton(
+                "✅ Paid",
+                callback_data=f"paid_{row['id']}"
+            ),
+            types.InlineKeyboardButton(
+                "❌ Reject",
+                callback_data=f"wreject_{row['id']}"
+            )
+        )
+
+        bot.send_message(
+            ADMIN_ID,
+            "💸 <b>Withdrawal Request</b>\n\n"
+            f"🆔 ID: <code>{row['id']}</code>\n"
+            f"👤 User: <code>{row['user_id']}</code>\n"
+            f"💰 Amount: <b>{row['amount']}</b>\n"
+            f"💳 Method: <b>{row['method']}</b>\n"
+            f"📱 Account: <code>{row['account']}</code>",
+            reply_markup=keyboard
+        )
+
+
+# ==============================
+# PAID
+# ==============================
+
+@bot.callback_query_handler(
+    func=lambda call: call.data.startswith("paid_")
+)
+def paid(call):
+
+    if call.from_user.id != ADMIN_ID:
+        return
+
+    withdrawal_id = int(
+        call.data.split("_")[1]
+    )
+
+    conn = connect()
+
+    row = conn.execute(
+        """
+        SELECT * FROM withdrawals
+        WHERE id=?
+        AND status='pending'
+        """,
+        (withdrawal_id,)
+    ).fetchone()
+
+    if not row:
+
+        conn.close()
+
+        bot.answer_callback_query(
+            call.id,
+            "Already processed."
+        )
+
+        return
+
+    conn.execute(
+        """
+        UPDATE withdrawals
+        SET status='paid'
+        WHERE id=?
+        """,
+        (withdrawal_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    bot.answer_callback_query(
+        call.id,
+        "Marked as Paid!"
+    )
+
+    bot.send_message(
+        row["user_id"],
+        f"✅ <b>Withdrawal Paid!</b>\n\n"
+        f"💰 Amount: <b>{row['amount']}</b>"
+    )
+
+    bot.edit_message_reply_markup(
+        ADMIN_ID,
+        call.message.message_id,
+        reply_markup=None
+    )
+
+
+# ==============================
+# WITHDRAW REJECT
+# ==============================
+
+@bot.callback_query_handler(
+    func=lambda call: call.data.startswith("wreject_")
+)
+def withdraw_reject(call):
+
+    if call.from_user.id != ADMIN_ID:
+        return
+
+    withdrawal_id = int(
+        call.data.split("_")[1]
+    )
+
+    conn = connect()
+
+    row = conn.execute(
+        """
+        SELECT * FROM withdrawals
+        WHERE id=?
+        AND status='pending'
+        """,
+        (withdrawal_id,)
+    ).fetchone()
+
+    if not row:
+
+        conn.close()
+
+        bot.answer_callback_query(
+            call.id,
+            "Already processed."
+        )
+
+        return
+
+    conn.execute(
+        """
+        UPDATE users
+        SET balance=balance+?
+        WHERE user_id=?
+        """,
+        (
+            row["amount"],
+            row["user_id"]
+        )
+    )
+
+    conn.execute(
+        """
+        UPDATE withdrawals
+        SET status='rejected'
+        WHERE id=?
+        """,
+        (withdrawal_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    bot.answer_callback_query(
+        call.id,
+        "Rejected!"
+    )
+
+    bot.send_message(
+        row["user_id"],
+        f"❌ <b>Withdrawal Rejected</b>\n\n"
+        f"💰 {row['amount']} আপনার Wallet-এ ফেরত দেওয়া হয়েছে।"
+    )
+
+    bot.edit_message_reply_markup(
+        ADMIN_ID,
+        call.message.message_id,
+        reply_markup=None
+    )
+
+
+# ==============================
+# START BOT
+# ==============================
+
+print("🌙 TaskMoon Bot is running...")
+
+bot.infinity_polling(
+    skip_pending=True
+)
