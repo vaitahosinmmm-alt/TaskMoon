@@ -111,10 +111,10 @@ button{
 <script>
 
 const API = "https://taskmoon-backend.onrender.com";
-
-let currentAdminId = "";
-
 const savedAdminId = localStorage.getItem("taskmoon_admin_id");
+let currentAdminId = savedAdminId || "";
+
+
 
 if(savedAdminId === "7136507076"){
   document.getElementById("adminId").value = savedAdminId;
