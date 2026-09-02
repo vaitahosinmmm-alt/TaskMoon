@@ -424,12 +424,19 @@ async function loadUsers(){
 
 
 <div class="card" style="margin-top:15px;">
-  <h3>🪙 Add Test Coins</h3>
+  <h3>🪙 Add Coins</h3>
+
+  <input
+    id="testCoinUid"
+    type="text"
+    placeholder="TaskMoon UID (e.g. TM572635)"
+    style="width:100%;padding:10px;margin:6px 0;"
+  >
 
   <input
     id="testCoinUserId"
     type="number"
-    placeholder="User ID"
+    placeholder="অথবা Telegram User ID"
     style="width:100%;padding:10px;margin:6px 0;"
   >
 
@@ -442,7 +449,7 @@ async function loadUsers(){
   >
 
   <button class="btn" onclick="addTestCoins()">
-    ➕ Add Test Coins
+    ➕ Add Coins
   </button>
 
   <div id="testCoinResult" style="margin-top:10px;"></div>
@@ -450,12 +457,18 @@ async function loadUsers(){
 
 <script>
 async function addTestCoins() {
+  const uid = document.getElementById("testCoinUid").value.trim();
   const userId = Number(document.getElementById("testCoinUserId").value);
   const amount = Number(document.getElementById("testCoinAmount").value);
   const result = document.getElementById("testCoinResult");
 
-  if (!userId || !amount || amount <= 0) {
-    result.textContent = "❌ User ID এবং Coins সঠিকভাবে দিন";
+  if (!uid && !userId) {
+    result.textContent = "❌ UID অথবা Telegram User ID দিন";
+    return;
+  }
+
+  if (!amount || amount <= 0) {
+    result.textContent = "❌ Coins সঠিকভাবে দিন";
     return;
   }
 
@@ -471,7 +484,8 @@ async function addTestCoins() {
         },
         body: JSON.stringify({
           admin_id: Number(currentAdminId),
-          user_id: userId,
+          uid: uid,
+          user_id: userId || undefined,
           amount: amount
         })
       }
@@ -489,6 +503,7 @@ async function addTestCoins() {
       "✅ Added " + data.added_coins +
       " coins. Current balance: " +
       data.user_coins + " Coins";
+
   } catch (error) {
     result.textContent = "❌ Server connection failed";
   }
