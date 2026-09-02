@@ -2545,6 +2545,11 @@ document.addEventListener(
     await loadTaskMoonUID();
     await refreshTaskMoonBalance();
     updateTaskBalance();
+
+    setTimeout(async function() {
+      await refreshTaskMoonBalance();
+      updateTaskBalance();
+    }, 2000);
   }
 );
 
