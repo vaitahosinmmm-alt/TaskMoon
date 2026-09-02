@@ -2392,7 +2392,6 @@ function escapeHtml(value){
 <script>
 async function loadTaskMoonUID() {
   const uidBox = document.getElementById("taskmoonUserUID");
-  if (!uidBox) return;
 
   const tg = window.Telegram?.WebApp;
 
@@ -2412,7 +2411,7 @@ async function loadTaskMoonUID() {
   }
 
   if (!telegramUser?.id) {
-    uidBox.textContent = "Telegram App থেকে খুলুন";
+    if (uidBox) uidBox.textContent = "Telegram App থেকে খুলুন";
     return;
   }
 
@@ -2435,12 +2434,12 @@ async function loadTaskMoonUID() {
     const registerData = await registerResponse.json();
 
     if (!registerResponse.ok || !registerData.uid) {
-      uidBox.textContent = "UID পাওয়া যায়নি";
+      if (uidBox) uidBox.textContent = "UID পাওয়া যায়নি";
       console.error("UID registration error:", registerData);
       return;
     }
 
-    uidBox.textContent = registerData.uid;
+    if (uidBox) uidBox.textContent = registerData.uid;
   try {
     const balanceResponse = await fetch(
       "https://taskmoon-backend.onrender.com/user/" + telegramUser.id
@@ -2465,7 +2464,7 @@ async function loadTaskMoonUID() {
 
   } catch (error) {
     console.error("UID registration error:", error);
-    uidBox.textContent = "Server connection failed";
+    if (uidBox) uidBox.textContent = "Server connection failed";
   }
 }
 
