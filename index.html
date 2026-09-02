@@ -834,6 +834,9 @@ document.querySelectorAll(".nav button")
 
 if(btn){
 btn.classList.add("active");
+  if (typeof refreshTaskMoonBalance === "function") {
+    refreshTaskMoonBalance();
+  }
 }
 
 window.scrollTo(0,0);
