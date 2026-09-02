@@ -2680,6 +2680,8 @@ async function refreshTaskMoonBalance() {
   const tgUser =
     tg?.initDataUnsafe?.user;
 
+  console.log("🔥 TG USER:", tgUser);
+
   if (!tgUser?.id) {
     console.log("Telegram user ID not ready");
     return;
