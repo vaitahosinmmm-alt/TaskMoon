@@ -390,6 +390,7 @@ async function loadUsers(){
     let html = "";
 
     data.users.forEach((user, index) => {
+      const currentBalance = Number(user.coins ?? 0);
 
       html += `
         <div class="card" style="margin-top:8px;">
@@ -405,7 +406,7 @@ async function loadUsers(){
           🔰 UID:
           ${escapeHtml(user.uid || "No UID")}<br>
           🪙 Current Balance:
-          ${escapeHtml(String(user.coins ?? 0))} Coins<br>
+          ${escapeHtml(String(currentBalance))} Coins<br>
           🕐 Joined:
           ${escapeHtml(user.created_at || "")}
         </div>
