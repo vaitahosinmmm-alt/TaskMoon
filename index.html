@@ -2402,20 +2402,37 @@ async function loadTaskMoonUID() {
 
   let telegramUser = null;
 
-  for (let i = 0; i < 10; i++) {
-    telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  for (let i = 0; i < 20; i++) {
+    telegramUser =
+      window.Telegram?.WebApp?.initDataUnsafe?.user;
 
     if (telegramUser?.id) break;
 
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve =>
+      setTimeout(resolve, 300)
+    );
   }
 
   if (!telegramUser?.id) {
-    if (uidBox) uidBox.textContent = "Telegram App থেকে খুলুন";
+    if (uidBox) {
+      uidBox.textContent =
+        "Telegram App থেকে খুলুন";
+    }
+
+    console.error(
+      "❌ Telegram User ID পাওয়া যায়নি"
+    );
+
     return;
   }
 
+  console.log(
+    "✅ Telegram User ID:",
+    telegramUser.id
+  );
+
   try {
+
     const registerResponse = await fetch(
       "https://taskmoon-backend.onrender.com/user/register",
       {
@@ -2425,84 +2442,169 @@ async function loadTaskMoonUID() {
         },
         body: JSON.stringify({
           user_id: telegramUser.id,
-          username: telegramUser.username || "",
-          first_name: telegramUser.first_name || ""
+          username:
+            telegramUser.username || "",
+          first_name:
+            telegramUser.first_name || ""
         })
       }
     );
 
-    const registerData = await registerResponse.json();
+    const registerData =
+      await registerResponse.json();
 
-    if (!registerResponse.ok || !registerData.uid) {
-      if (uidBox) uidBox.textContent = "UID পাওয়া যায়নি";
-      console.error("UID registration error:", registerData);
+    if (!registerResponse.ok ||
+        !registerData.uid) {
+
+      if (uidBox) {
+        uidBox.textContent =
+          "UID পাওয়া যায়নি";
+      }
+
+      console.error(
+        "❌ Registration error:",
+        registerData
+      );
+
       return;
     }
 
-    if (uidBox) uidBox.textContent = registerData.uid;
-  try {
+    if (uidBox) {
+      uidBox.textContent =
+        registerData.uid;
+    }
+
+    // ==============================
+    // REAL BALANCE FROM BACKEND
+    // ==============================
+
     const balanceResponse = await fetch(
-      "https://taskmoon-backend.onrender.com/user/" + telegramUser.id
+      "https://taskmoon-backend.onrender.com/user/" +
+      telegramUser.id +
+      "?t=" + Date.now(),
+      {
+        cache: "no-store"
+      }
     );
 
-    const balanceData = await balanceResponse.json();
+    const balanceData =
+      await balanceResponse.json();
 
-    if (balanceResponse.ok && typeof balanceData.coins !== "undefined") {
-      taskCoins = Number(balanceData.coins) || 0;
+    console.log(
+      "💰 Backend balance:",
+      balanceData
+    );
+
+    if (
+      balanceResponse.ok &&
+      typeof balanceData.coins !== "undefined"
+    ) {
+
+      taskCoins =
+        Number(balanceData.coins) || 0;
+
       saveTaskData();
+
       updateTaskBalance();
-      console.log("TaskMoon balance synced:", taskCoins);
+
+      console.log(
+        "✅ TaskMoon balance synced:",
+        taskCoins
+      );
+    } else {
+
+      console.error(
+        "❌ Balance API error:",
+        balanceData
+      );
     }
-  } catch (balanceError) {
-    console.error("Balance loading error:", balanceError);
-  }
-
-
-    // Backend balance is the single source of truth.
-    // Do not overwrite it with registerData.coins.
-
 
   } catch (error) {
-    console.error("UID registration error:", error);
-    if (uidBox) uidBox.textContent = "Server connection failed";
+
+    console.error(
+      "❌ TaskMoon startup error:",
+      error
+    );
+
+    if (uidBox) {
+      uidBox.textContent =
+        "Server connection failed";
+    }
   }
 }
 
-document.addEventListener("DOMContentLoaded", loadTaskMoonUID);
+document.addEventListener(
+  "DOMContentLoaded",
+  function() {
+    loadTaskMoonUID();
+  }
+);
 
 async function refreshTaskMoonBalance() {
-  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
-  if (!tgUser?.id) return;
+  const tgUser =
+    window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+  if (!tgUser?.id) {
+    return;
+  }
 
   try {
+
     const response = await fetch(
-      "https://taskmoon-backend.onrender.com/user/" + tgUser.id + "?t=" + Date.now(),
-      { cache: "no-store" }
+      "https://taskmoon-backend.onrender.com/user/" +
+      tgUser.id +
+      "?t=" + Date.now(),
+      {
+        cache: "no-store"
+      }
     );
 
-    const data = await response.json();
+    const data =
+      await response.json();
 
-    if (response.ok && typeof data.coins !== "undefined") {
-      taskCoins = Number(data.coins) || 0;
+    if (
+      response.ok &&
+      typeof data.coins !== "undefined"
+    ) {
+
+      taskCoins =
+        Number(data.coins) || 0;
+
       saveTaskData();
+
       updateTaskBalance();
-      console.log("🔄 Balance refreshed:", taskCoins);
+
+      console.log(
+        "🔄 Balance refreshed:",
+        taskCoins
+      );
     }
+
   } catch (error) {
-    console.error("Balance refresh error:", error);
+
+    console.error(
+      "Balance refresh error:",
+      error
+    );
   }
 }
 
-// Refresh when App becomes visible again
-document.addEventListener("visibilitychange", function() {
-  if (!document.hidden) {
-    refreshTaskMoonBalance();
-  }
-});
+document.addEventListener(
+  "visibilitychange",
+  function() {
 
-// Auto refresh every 10 seconds
-setInterval(refreshTaskMoonBalance, 10000);
+    if (!document.hidden) {
+      refreshTaskMoonBalance();
+    }
+
+  }
+);
+
+setInterval(
+  refreshTaskMoonBalance,
+  10000
+);
 
 </script>
 </body>
