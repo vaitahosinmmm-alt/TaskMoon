@@ -2673,10 +2673,17 @@ document.addEventListener(
 );
 
 async function refreshTaskMoonBalance() {
-  const tgUser =
-    window.Telegram?.WebApp?.initDataUnsafe?.user;
+  const tg = window.Telegram?.WebApp;
 
-  if (!tgUser?.id) return;
+  if (tg) tg.ready();
+
+  const tgUser =
+    tg?.initDataUnsafe?.user;
+
+  if (!tgUser?.id) {
+    console.log("Telegram user ID not ready");
+    return;
+  }
 
   try {
     const response = await fetch(
