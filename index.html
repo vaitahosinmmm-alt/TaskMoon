@@ -1678,8 +1678,7 @@ const TASKS = [
 let completedTasks =
   JSON.parse(localStorage.getItem("taskmoon_completed_tasks") || "[]");
 
-let taskCoins =
-  Number(localStorage.getItem("taskmoon_task_coins") || 0);
+let taskCoins = 0;
 
 function saveTaskData(){
 
