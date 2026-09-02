@@ -472,27 +472,40 @@ async function addTestCoins() {
     return;
   }
 
-  if (!amount || amount <= 0) {
+  if (!Number.isInteger(amount) || amount <= 0) {
     result.textContent = "❌ Coins সঠিকভাবে দিন";
+    return;
+  }
+
+  if (!currentAdminId || String(currentAdminId) !== "7136507076") {
+    result.textContent = "❌ Admin Login করুন";
     return;
   }
 
   result.textContent = "⏳ Adding coins...";
 
   try {
+    const body = {
+      admin_id: 7136507076,
+      amount: amount
+    };
+
+    if (uid) {
+      body.uid = uid;
+    } else {
+      body.user_id = userId;
+    }
+
     const response = await fetch(
-      API + "/admin/add-coins",
+      API + "/admin/add-coins?t=" + Date.now(),
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache"
         },
-        body: JSON.stringify({
-          admin_id: Number(currentAdminId),
-          uid: uid,
-          user_id: userId || undefined,
-          amount: amount
-        })
+        cache: "no-store",
+        body: JSON.stringify(body)
       }
     );
 
@@ -509,10 +522,15 @@ async function addTestCoins() {
       " coins. Current balance: " +
       data.user_coins + " Coins";
 
+    document.getElementById("testCoinAmount").value = "";
+
   } catch (error) {
-    result.textContent = "❌ Server connection failed";
+    console.error("Add coins error:", error);
+    result.textContent =
+      "❌ Server-এর সাথে যোগাযোগ করা যাচ্ছে না";
   }
 }
+
 </script>
 
 </body>
