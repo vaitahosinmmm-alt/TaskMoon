@@ -2459,12 +2459,9 @@ async function loadTaskMoonUID() {
   }
 
 
-    // Sync real balance from PostgreSQL
-    if (typeof registerData.coins !== "undefined") {
-      taskCoins = Number(registerData.coins) || 0;
-      saveTaskData();
-      updateTaskBalance();
-    }
+    // Backend balance is the single source of truth.
+    // Do not overwrite it with registerData.coins.
+
 
   } catch (error) {
     console.error("UID registration error:", error);
