@@ -2470,6 +2470,41 @@ async function loadTaskMoonUID() {
 }
 
 document.addEventListener("DOMContentLoaded", loadTaskMoonUID);
+
+async function refreshTaskMoonBalance() {
+  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+  if (!tgUser?.id) return;
+
+  try {
+    const response = await fetch(
+      "https://taskmoon-backend.onrender.com/user/" + tgUser.id + "?t=" + Date.now(),
+      { cache: "no-store" }
+    );
+
+    const data = await response.json();
+
+    if (response.ok && typeof data.coins !== "undefined") {
+      taskCoins = Number(data.coins) || 0;
+      saveTaskData();
+      updateTaskBalance();
+      console.log("🔄 Balance refreshed:", taskCoins);
+    }
+  } catch (error) {
+    console.error("Balance refresh error:", error);
+  }
+}
+
+// Refresh when App becomes visible again
+document.addEventListener("visibilitychange", function() {
+  if (!document.hidden) {
+    refreshTaskMoonBalance();
+  }
+});
+
+// Auto refresh every 10 seconds
+setInterval(refreshTaskMoonBalance, 10000);
+
 </script>
 </body>
 </html>
