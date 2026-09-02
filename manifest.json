@@ -1,0 +1,13 @@
+{
+  "background_color": "#071819",
+  "dir": "auto",
+  "display": "standalone",
+  "name": "TaskMoon 🌙",
+  "orientation": "portrait",
+  "scope": "https://taskmoonbd2026.netlify.app/",
+  "short_name": "TaskMoon",
+  "start_url": "https://taskmoonbd2026.netlify.app/",
+  "theme_color": "#0B292A",
+  "lang": "bn",
+  "categories": ["productivity"]
+}

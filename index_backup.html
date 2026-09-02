@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="bn">
+<<script src="https://telegram.org/js/telegram-web-app.js"></script>>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TaskMoon 🌙</title>
+
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:Arial,sans-serif;
+}
+
+body{
+  background:#061415;
+  color:#fff;
+  min-height:100vh;
+}
+
+.app{
+  max-width:520px;
+  margin:auto;
+  min-height:100vh;
+  background:#071819;
+  padding-bottom:80px;
+}
+
+header{
+  padding:20px;
+  background:linear-gradient(135deg,#0b292a,#07191a);
+  border-bottom:1px solid #164445;
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.logo-icon{
+  width:48px;
+  height:48px;
+  border-radius:15px;
+  background:#103536;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:25px;
+}
+
+.logo h1{
+  color:#42e0d1;
+  font-size:23px;
+}
+
+.logo p{
+  color:#779898;
+  font-size:12px;
+  margin-top:3px;
+}
+
+.balance-card{
+  margin:16px;
+  padding:20px;
+  border-radius:20px;
+  background:linear-gradient(135deg,#0d3334,#0a2425);
+  border:1px solid #195152;
+}
+
+.balance-card small{
+  color:#88a9a9;
+}
+
+.balance{
+  font-size:30px;
+  font-weight:bold;
+  color:#42e0d1;
+  margin:7px 0;
+}
+
+.coin{
+  color:#8aabab;
+  font-size:12px;
+}
+
+.container{
+  padding:0 16px;
+}
+
+.section{
+  display:none;
+}
+
+.section.active{
+  display:block;
+}
+
+.title{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:20px 0 13px;
+}
+
+.title h2{
+  font-size:19px;
+}
+
+.title span{
+  color:#42e0d1;
+  font-size:12px;
+}
+
+.card{
+  background:#0b2223;
+  border:1px solid #153f40;
+  border-radius:17px;
+  padding:16px;
+  margin-bottom:12px;
+}
+
+.card h3{
+  font-size:16px;
+  margin-bottom:7px;
+}
+
+.card p{
+  color:#8da8a8;
+  font-size:13px;
+  line-height:1.55;
+}
+
+.task-top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.reward{
+  color:#42e0d1;
+  font-weight:bold;
+  white-space:nowrap;
+}
+
+.tags{
+  display:flex;
+  gap:7px;
+  margin:12px 0;
+}
+
+.tag{
+  background:#103031;
+  color:#8eb0af;
+  padding:5px 9px;
+  border-radius:7px;
+  font-size:10px;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  border:0;
+  border-radius:11px;
+  background:#27cfc0;
+  color:#031212;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.secondary{
+  background:#123334;
+  color:#b5cccc;
+  margin-top:8px;
+}
+
+.menu-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:11px;
+}
+
+.menu-card{
+  padding:18px 13px;
+  border-radius:17px;
+  background:#0b2223;
+  border:1px solid #153f40;
+  cursor:pointer;
+}
+
+.menu-card .icon{
+  font-size:25px;
+  margin-bottom:9px;
+}
+
+.menu-card h3{
+  font-size:14px;
+}
+
+.menu-card p{
+  color:#789797;
+  font-size:11px;
+  margin-top:4px;
+}
+
+.nav{
+  position:fixed;
+  bottom:0;
+  left:50%;
+  transform:translateX(-50%);
+  width:100%;
+  max-width:520px;
+  height:72px;
+  background:#091d1e;
+  border-top:1px solid #153d3e;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  z-index:10;
+}
+
+.nav button{
+  background:transparent;
+  color:#6d8c8c;
+  border-radius:0;
+  font-size:10px;
+  padding:7px 2px;
+}
+
+.nav button div{
+  font-size:20px;
+  margin-bottom:3px;
+}
+
+.nav button.active{
+  color:#42e0d1;
+}
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.78);
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+  z-index:20;
+}
+
+.modal.show{
+  display:flex;
+}
+
+.modal-box{
+  width:100%;
+  max-width:520px;
+  background:#0a2021;
+  border:1px solid #194849;
+  border-radius:22px 22px 0 0;
+  padding:22px;
+}
+
+.modal-box h2{
+  margin-bottom:9px;
+}
+
+.modal-box p{
+  color:#91aaaa;
+  font-size:13px;
+  line-height:1.6;
+  white-space:pre-line;
+  margin-bottom:15px;
+}
+
+textarea{
+  width:100%;
+  height:110px;
+  background:#061516;
+  color:white;
+  border:1px solid #1a4546;
+  border-radius:11px;
+  padding:12px;
+  outline:none;
+  resize:none;
+}
+
+.prayer{
+  display:flex;
+  justify-content:space-between;
+  padding:14px;
+  margin-bottom:8px;
+  background:#0b2223;
+  border:1px solid #153f40;
+  border-radius:13px;
+}
+
+.prayer span:first-child{
+  color:#b9cccc;
+}
+
+.prayer span:last-child{
+  color:#42e0d1;
+  font-weight:bold;
+}
+
+.arabic{
+  font-size:25px;
+  line-height:2;
+  text-align:right;
+  direction:rtl;
+  color:#d6eeee;
+  margin:15px 0;
+}
+
+.note{
+  padding:12px;
+  background:#0d292a;
+  border-left:3px solid #42e0d1;
+  border-radius:8px;
+  color:#9db5b5;
+  font-size:12px;
+  line-height:1.6;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+<div class="logo">
+<div class="logo-icon">🌙</div>
+<div>
+<h1>TaskMoon</h1>
+<p>Earn • Complete • Grow</p>
+</div>
+</div>
+</header>
+
+<section id="home" class="section active">
+
+<div class="balance-card">
+<small>Current Balance</small>
+<div class="balance">0 🪙</div>
+<div class="coin">TaskMoon Coins</div>
+</div>
+
+<div class="container">
+
+<div class="title">
+<h2>⚡ Quick Menu</h2>
+</div>
+
+<div class="menu-grid">
+
+<div class="menu-card" onclick="showSection('tasks')">
+<div class="icon">📋</div>
+<h3>Tasks</h3>
+<p>Complete & earn</p>
+</div>
+
+<div class="menu-card" onclick="showSection('wallet')">
+<div class="icon">💰</div>
+<h3>Wallet</h3>
+<p>Balance & withdraw</p>
+</div>
+
+<div class="menu-card" onclick="showSection('refer')">
+<div class="icon">👥</div>
+<h3>Refer</h3>
+<p>Invite & earn</p>
+</div>
+
+<div class="menu-card" onclick="showSection('islamic')">
+<div class="icon">🕌</div>
+<h3>Islamic</h3>
+<p>Learn & remember</p>
+</div>
+
+</div>
+
+<div class="title">
+<h2>🔥 Featured Tasks</h2>
+</div>
+
+<div class="card">
+<div class="task-top">
+<h3>🖼️ Background Remove</h3>
+<span class="reward">+50 🪙</span>
+</div>
+<p>ছবির background remove করে পরিষ্কার PNG তৈরি করুন।</p>
+</div>
+
+<div class="card">
+<div class="task-top">
+<h3>⌨️ বাংলা Text Typing</h3>
+<span class="reward">+80 🪙</span>
+</div>
+<p>দেওয়া ছবি বা PDF দেখে বাংলা text টাইপ করুন।</p>
+</div>
+
+<div class="card">
+<div class="task-top">
+<h3>✂️ Image Crop & Resize</h3>
+<span class="reward">+40 🪙</span>
+</div>
+<p>নির্দেশিত size অনুযায়ী ছবি crop ও resize করুন।</p>
+</div>
+
+</div>
+</section>
+
+<section id="tasks" class="section">
+<div class="container">
+
+<div class="title">
+<h2>📋 Available Tasks</h2>
+<span>Earn Coins</span>
+</div>
+
+<div id="taskList"></div>
+
+</div>
+</section>
+
+<section id="wallet" class="section">
+<div class="container">
+
+<div class="title">
+<h2>💰 My Wallet</h2>
+</div>
+
+<div class="balance-card">
+<small>Total Balance</small>
+<div class="balance">0 🪙</div>
+<div class="coin">Available TaskMoon Coins</div>
+</div>
+
+<div class="card">
+<h3>💸 Withdraw</h3>
+<p>তোমার balance থেকে withdrawal request পাঠাতে পারবে।</p>
+<br>
+<button onclick="alert('Withdrawal system backend-এর সাথে connect করা হবে।')">
+💳 Withdraw Now
+</button>
+</div>
+
+<div class="title">
+<h2>📜 Transaction</h2>
+</div>
+
+<div class="card">
+<p>কোনো transaction এখনো নেই।</p>
+</div>
+
+</div>
+</section>
+
+<section id="refer" class="section">
+<div class="container">
+
+<div class="title">
+<h2>👥 Referral</h2>
+</div>
+
+<div class="balance-card">
+<small>Referral Bonus</small>
+<div class="balance">0 🪙</div>
+<div class="coin">Per successful referral</div>
+</div>
+
+<div class="card">
+<h3>🔗 Your Referral Link</h3>
+<p>Telegram account connect হলে এখানে personal referral link থাকবে।</p>
+<br>
+<button onclick="alert('Referral link backend connect হলে automatic তৈরি হবে।')">
+📋 Copy Referral Link
+</button>
+</div>
+
+<div class="card">
+<h3>👤 Total Referrals</h3>
+<p>0 successful referrals</p>
+</div>
+
+</div>
+</section>
+
+<section id="islamic" class="section">
+<div class="container">
+
+<div class="title">
+<h2>🕌 Islamic</h2>
+<span>🌙</span>
+</div>
+
+<div class="menu-grid">
+
+<div class="menu-card" onclick="showIslamic('prayer')">
+<div class="icon">🕐</div>
+<h3>নামাজের সময়সূচি</h3>
+<p>আজকের ৫ ওয়াক্ত</p>
+</div>
+
+<div class="menu-card" onclick="showIslamic('names')">
+<div class="icon">99️⃣</div>
+<h3>আল্লাহর ৯৯ নাম</h3>
+<p>সম্পূর্ণ তালিকা</p>
+</div>
+
+<div class="menu-card" onclick="showIslamic('ayat')">
+<div class="icon">📜</div>
+<h3>আয়াতুল কুরসি</h3>
+<p>আরবি ও অর্থ</p>
+</div>
+
+<div class="menu-card" onclick="showIslamic('namaz')">
+<div class="icon">🧎</div>
+<h3>নামাজ শেখা</h3>
+<p>ধাপে ধাপে</p>
+</div>
+
+<div class="menu-card" onclick="showIslamic('surah')">
+<div class="icon">📖</div>
+<h3>সূরা সমূহ</h3>
+<p>১১৪টি সূরা</p>
+</div>
+
+<div class="menu-card" onclick="showIslamic('dua')">
+<div class="icon">📿</div>
+<h3>যিকির ও দোয়া</h3>
+<p>প্রয়োজনীয় দোয়া</p>
+</div>
+
+</div>
+
+<div id="islamicContent"></div>
+
+</div>
+</section>
+
+<nav class="nav">
+
+<button class="active" onclick="showSection('home',this)">
+<div>🏠</div>
+Home
+</button>
+
+<button onclick="showSection('tasks',this)">
+<div>📋</div>
+Tasks
+</button>
+
+<button onclick="showSection('wallet',this)">
+<div>💰</div>
+Wallet
+</button>
+
+<button onclick="showSection('refer',this)">
+<div>👥</div>
+Refer
+</button>
+
+<button onclick="showSection('islamic',this)">
+<div>🕌</div>
+Islamic
+</button>
+
+</nav>
+
+</div>
+
+<div class="modal" id="taskModal">
+
+<div class="modal-box">
+
+<h2 id="modalTitle"></h2>
+
+<p id="modalDescription"></p>
+
+<textarea id="proof"
+placeholder="কাজের proof / উত্তর এখানে লিখুন..."></textarea>
+
+<br><br>
+
+<button onclick="submitTask()">
+📤 Submit Task
+</button>
+
+<button class="secondary" onclick="closeModal()">
+✕ Close
+</button>
+
+</div>
+</div>
+
+<script>
+
+const tasks=[
+
+{
+id:1,
+title:"🖼️ Background Remove",
+reward:50,
+category:"Image Editing",
+limit:"1 বার",
+description:"দেওয়া ছবির background remove করে পরিষ্কার PNG ছবি তৈরি করতে হবে। কাজ শেষ হলে proof জমা দিতে হবে।"
+},
+
+{
+id:2,
+title:"⌨️ বাংলা Text Typing",
+reward:80,
+category:"Typing",
+limit:"1 বার",
+description:"দেওয়া ছবি বা PDF দেখে নির্ভুলভাবে বাংলা text টাইপ করতে হবে।"
+},
+
+{
+id:3,
+title:"✂️ Image Crop & Resize",
+reward:40,
+category:"Image Editing",
+limit:"2 বার",
+description:"দেওয়া ছবিকে নির্দেশিত size অনুযায়ী crop ও resize করতে হবে।"
+},
+
+{
+id:4,
+title:"📝 Data Entry",
+reward:60,
+category:"Data Entry",
+limit:"1 বার",
+description:"দেওয়া তথ্য নির্দিষ্ট format অনুযায়ী entry করতে হবে।"
+},
+
+{
+id:5,
+title:"📄 PDF → Text",
+reward:100,
+category:"Typing",
+limit:"1 বার",
+description:"দেওয়া PDF থেকে প্রয়োজনীয় text নির্ভুলভাবে লিখে জমা দিতে হবে।"
+},
+
+{
+id:6,
+title:"🔤 বাংলা / English Typing",
+reward:70,
+category:"Typing",
+limit:"1 বার",
+description:"দেওয়া content দেখে বাংলা অথবা English typing সম্পন্ন করতে হবে।"
+}
+
+];
+
+let selectedTask=null;
+
+function showSection(id,btn){
+
+document.querySelectorAll(".section")
+.forEach(x=>x.classList.remove("active"));
+
+document.getElementById(id)
+.classList.add("active");
+
+document.querySelectorAll(".nav button")
+.forEach(x=>x.classList.remove("active"));
+
+if(btn){
+btn.classList.add("active");
+}
+
+window.scrollTo(0,0);
+
+}
+
+function loadTasks(){
+
+const list=document.getElementById("taskList");
+
+list.innerHTML="";
+
+tasks.forEach(task=>{
+
+const div=document.createElement("div");
+
+div.className="card";
+
+div.innerHTML=`
+
+<div class="task-top">
+<h3>${task.title}</h3>
+<span class="reward">+${task.reward} 🪙</span>
+</div>
+
+<p>${task.description}</p>
+
+<div class="tags">
+
+<span class="tag">
+${task.category}
+</span>
+
+<span class="tag">
+Limit: ${task.limit}
+</span>
+
+</div>
+
+<button onclick="openTask(${task.id})">
+🚀 Take Task
+</button>
+
+`;
+
+list.appendChild(div);
+
+});
+
+}
+
+function openTask(id){
+
+selectedTask=tasks.find(x=>x.id===id);
+
+document.getElementById("modalTitle")
+.innerText=selectedTask.title;
+
+document.getElementById("modalDescription")
+.innerText=
+selectedTask.description+
+"\n\nReward: "+
+selectedTask.reward+
+" Coins";
+
+document.getElementById("proof").value="";
+
+document.getElementById("taskModal")
+.classList.add("show");
+
+}
+
+function closeModal(){
+
+document.getElementById("taskModal")
+.classList.remove("show");
+
+}
+
+function submitTask(){
+
+const proof=
+document.getElementById("proof")
+.value.trim();
+
+if(!proof){
+
+alert("⚠️ আগে proof লিখুন।");
+
+return;
+
+}
+
+alert(
+"✅ Task submitted!\n\n"+
+"Admin verification-এর পর reward যোগ হবে।"
+);
+
+closeModal();
+
+}
+
+function showIslamic(type){
+
+const box=
+document.getElementById("islamicContent");
+
+if(type==="prayer"){
+
+box.innerHTML=`
+
+<div class="title">
+<h2>🕐 আজকের নামাজ</h2>
+</div>
+
+<div class="note">
+📍 User-এর location অনুযায়ী নামাজের সময় automatic update করার জন্য prayer-time system connect করা হবে।
+</div>
+
+<br>
+
+<div class="prayer">
+<span>ফজর</span>
+<span>--:--</span>
+</div>
+
+<div class="prayer">
+<span>যোহর</span>
+<span>--:--</span>
+</div>
+
+<div class="prayer">
+<span>আসর</span>
+<span>--:--</span>
+</div>
+
+<div class="prayer">
+<span>মাগরিব</span>
+<span>--:--</span>
+</div>
+
+<div class="prayer">
+<span>এশা</span>
+<span>--:--</span>
+</div>
+
+`;
+
+}
+
+else if(type==="names"){
+
+box.innerHTML=`
+
+<div class="title">
+<h2>99️⃣ আল্লাহর ৯৯ নাম</h2>
+</div>
+
+<div class="card">
+<h3>الرَّحْمَنُ — Ar-Rahman</h3>
+<p>পরম দয়ালু</p>
+</div>
+
+<div class="card">
+<h3>الرَّحِيمُ — Ar-Raheem</h3>
+<p>অতি দয়াশীল</p>
+</div>
+
+<div class="card">
+<h3>الْمَلِكُ — Al-Malik</h3>
+<p>সর্বময় অধিপতি</p>
+</div>
+
+<div class="card">
+<p>সম্পূর্ণ ৯৯ নামের তালিকা পরবর্তী ধাপে যুক্ত করা হবে।</p>
+</div>
+
+`;
+
+}
+
+else if(type==="ayat"){
+
+box.innerHTML=`
+
+<div class="title">
+<h2>📜 আয়াতুল কুরসি</h2>
+</div>
+
+<div class="card">
+
+<div class="arabic">
+اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ
+</div>
+
+<p>
+আল্লাহ, তিনি ছাড়া কোনো উপাস্য নেই। তিনি চিরঞ্জীব, সমস্ত সৃষ্টির ধারক।
+</p>
+
+</div>
+
+`;
+
+}
+
+else if(type==="namaz"){
+
+box.innerHTML=`
+
+<div class="title">
+<h2>🧎 নামাজ শেখার নিয়ম</h2>
+</div>
+
+<div class="card">
+<h3>১. অজু</h3>
+<p>নামাজের আগে সঠিকভাবে অজু করতে হবে।</p>
+</div>
+
+<div class="card">
+<h3>২. নিয়ত</h3>
+<p>নির্দিষ্ট নামাজের নিয়ত করে কিবলামুখী হয়ে দাঁড়াতে হবে।</p>
+</div>
+
+<div class="card">
+<h3>৩. তাকবির</h3>
+<p>আল্লাহু আকবার বলে নামাজ শুরু করতে হবে।</p>
+</div>
+
+<div class="card">
+<h3>৪. কিয়াম, রুকু ও সিজদা</h3>
+<p>নামাজের নিয়ম অনুযায়ী কিয়াম, রুকু ও সিজদা সম্পন্ন করতে হবে।</p>
+</div>
+
+`;
+
+}
+
+else if(type==="surah"){
+
+box.innerHTML=`
+
+<div class="title">
+<h2>📖 সূরা সমূহ</h2>
+</div>
+
+<div class="card">
+<h3>সূরা আল-ফাতিহা</h3>
+<p>৭ আয়াত</p>
+</div>
+
+<div class="card">
+<h3>সূরা আল-ইখলাস</h3>
+<p>৪ আয়াত</p>
+</div>
+
+<div class="card">
+<h3>সূরা আল-ফালাক</h3>
+<p>৫ আয়াত</p>
+</div>
+
+<div class="card">
+<h3>সূরা আন-নাস</h3>
+<p>৬ আয়াত</p>
+</div>
+
+`;
+
+}
+
+else if(type==="dua"){
+
+box.innerHTML=`
+
+<div class="title">
+<h2>📿 যিকির ও দোয়া</h2>
+</div>
+
+<div class="card">
+<h3>সুবহানাল্লাহ</h3>
+<p>আল্লাহ পবিত্র ও মহিমান্বিত।</p>
+</div>
+
+<div class="card">
+<h3>আলহামদুলিল্লাহ</h3>
+<p>সমস্ত প্রশংসা আল্লাহর জন্য।</p>
+</div>
+
+<div class="card">
+<h3>আল্লাহু আকবার</h3>
+<p>আল্লাহ সর্বশ্রেষ্ঠ।</p>
+</div>
+
+<div class="card">
+<h3>আস্তাগফিরুল্লাহ</h3>
+<p>আমি আল্লাহর কাছে ক্ষমা চাই।</p>
+</div>
+
+`;
+
+}
+
+}
+
+loadTasks();
+
+</script>
+
+</body>
+</html>

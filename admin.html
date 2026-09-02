@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TaskMoon Admin 🌙</title>
+
+<style>
+body{
+  margin:0;
+  background:#061415;
+  color:#fff;
+  font-family:Arial;
+  padding:16px;
+}
+
+h1{
+  color:#42e0d1;
+}
+
+.card{
+  background:#0b2223;
+  border:1px solid #153f40;
+  border-radius:14px;
+  padding:15px;
+  margin:12px 0;
+}
+
+input,textarea,button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:9px;
+  border:0;
+  box-sizing:border-box;
+}
+
+input,textarea{
+  background:#102728;
+  color:#fff;
+  border:1px solid #285455;
+}
+
+textarea{
+  min-height:80px;
+  resize:vertical;
+}
+
+button{
+  background:#123f40;
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.uid{
+  color:#42e0d1;
+  font-weight:bold;
+}
+
+.reply{
+  background:#0e3031;
+  border-radius:10px;
+  padding:10px;
+  margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🌙 TaskMoon Admin</h1>
+
+<div class="card">
+  <h3>🔐 Admin Login</h3>
+
+  <input
+    id="adminId"
+    type="number"
+    placeholder="Admin ID"
+  >
+  <button id="loadBtn" type="button" onclick="loadChats()">
+    📥 Load Chats
+  </button>
+
+  <button id="logoutBtn" type="button" style="display:none;">
+    🚪 Logout Admin
+  </button>
+
+
+</div>
+
+<div id="chatList"></div>
+<div class="card" style="margin-top:15px;">
+  <h3>👥 Users</h3>
+
+  <div id="totalUsers"
+       style="font-size:22px;font-weight:bold;margin:10px 0;">
+    Total Users: —
+  </div>
+
+  <button id="loadUsersBtn" type="button">
+    👥 Load Users
+  </button>
+
+  <div id="usersSection" style="margin-top:10px;"></div>
+</div>
+
+
+
+<script>
+
+const API = "https://taskmoon-backend.onrender.com";
+const savedAdminId = localStorage.getItem("taskmoon_admin_id");
+let currentAdminId = savedAdminId || "";
+
+
+
+if(savedAdminId === "7136507076"){
+  document.getElementById("adminId").value = savedAdminId;
+  document.getElementById("logoutBtn").style.display = "block";
+}
+
+
+
+document.getElementById("logoutBtn").addEventListener("click", function(){
+  localStorage.removeItem("taskmoon_admin_id");
+  document.getElementById("adminId").value = "";
+  document.getElementById("logoutBtn").style.display = "none";
+  document.getElementById("chatList").innerHTML = "";
+  currentAdminId = "";
+  alert("✅ Admin Logout হয়েছে");
+});
+
+
+async function loadChats(){
+
+  const adminId =
+    document.getElementById("adminId").value.trim();
+
+  if(adminId !== "7136507076"){
+    alert("❌ Unauthorized Admin");
+    return;
+  }
+
+  currentAdminId = adminId;
+  localStorage.setItem("taskmoon_admin_id", adminId);
+  document.getElementById("logoutBtn").style.display = "block";
+
+  const list =
+    document.getElementById("chatList");
+
+  list.innerHTML =
+    "<div class='card'>⏳ Loading chats...</div>";
+
+  try{
+
+    const response = await fetch(
+      API +
+      "/admin/support/chats?admin_id=" +
+      encodeURIComponent(adminId)
+    );
+
+    const data = await response.json();
+
+    if(!response.ok){
+
+      list.innerHTML =
+        "<div class='card'>❌ " +
+        (data.error || "Server Error") +
+        "</div>";
+
+      return;
+    }
+
+    if(!Array.isArray(data) || data.length === 0){
+
+      list.innerHTML =
+        "<div class='card'>📭 এখন কোনো Live Chat নেই।</div>";
+
+      return;
+    }
+
+    list.innerHTML = data.map(chat => `
+
+      <div class="card">
+
+        <div class="uid">
+          🆔 UID: ${escapeHtml(chat.uid)}
+        </div>
+
+        <p>
+          👤 User ID: ${escapeHtml(String(chat.user_id))}
+        </p>
+
+        <p>
+          📋 Problem: ${escapeHtml(chat.problem)}
+        </p>
+
+        <p>
+          💬 Message:
+          ${escapeHtml(chat.message || "No message")}
+        </p>
+
+        <p>
+          🟢 Status: ${escapeHtml(chat.status)}
+        </p>
+
+        ${
+          chat.admin_reply
+          ?
+          `<div class="reply">
+             ↩️ Admin Reply:<br>
+             ${escapeHtml(chat.admin_reply)}
+           </div>`
+          :
+          ""
+        }
+
+        <small>
+          🕒 ${escapeHtml(chat.created_at)}
+        </small>
+
+        ${
+          chat.status === "open"
+          ?
+          `
+          <textarea
+            id="reply-${chat.id}"
+            placeholder="✍️ এখানে Reply লিখুন..."
+          ></textarea>
+
+          <button
+            type="button"
+            data-chat-id="${chat.id}"
+            class="replyBtn"
+          >
+            📤 Send Reply
+          </button>
+          `
+          :
+          `<p>🔒 Chat Closed</p>`
+        }
+
+      </div>
+
+    `).join("");
+
+    document.querySelectorAll(".replyBtn").forEach(button => {
+
+      button.addEventListener("click", function(){
+
+        const chatId =
+          Number(this.dataset.chatId);
+
+        sendReply(chatId);
+
+      });
+
+    });
+
+  }catch(error){
+
+    console.error(error);
+
+    list.innerHTML =
+      "<div class='card'>❌ Server connection failed.</div>";
+
+  }
+}
+
+
+async function sendReply(chatId){
+
+  const textarea =
+    document.getElementById("reply-" + chatId);
+
+  const reply =
+    textarea.value.trim();
+
+  if(!reply){
+
+    alert("⚠️ আগে Reply লিখুন।");
+    return;
+  }
+
+  try{
+
+    const response = await fetch(
+      API + "/admin/support/reply",
+      {
+        method:"POST",
+
+        headers:{
+          "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify({
+          admin_id:Number(currentAdminId),
+          chat_id:chatId,
+          reply:reply
+        })
+      }
+    );
+
+    const data =
+      await response.json();
+
+    if(!response.ok || !data.success){
+
+      alert(
+        "❌ Reply পাঠানো যায়নি.\n" +
+        (data.error || "Unknown error")
+      );
+
+      return;
+    }
+
+    alert("✅ Admin Reply Sent!");
+
+    loadChats();
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(
+      "❌ Server-এর সাথে যোগাযোগ করা যাচ্ছে না।"
+    );
+
+  }
+}
+
+
+function escapeHtml(value){
+
+  return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+
+document.getElementById("loadUsersBtn").addEventListener("click", loadUsers);
+
+async function loadUsers(){
+
+  const adminId = document.getElementById("adminId").value.trim();
+
+  if(adminId !== "7136507076"){
+    alert("❌ আগে Admin Login করুন");
+    return;
+  }
+
+  const section = document.getElementById("usersSection");
+
+  section.innerHTML =
+    "<div class='card'>⏳ Loading users...</div>";
+
+  try{
+
+    const response = await fetch(
+      API +
+      "/admin/users?admin_id=" +
+      encodeURIComponent(adminId)
+    );
+
+    const data = await response.json();
+
+    if(!response.ok || !data.success){
+      section.innerHTML =
+        "<div class='card'>❌ " +
+        (data.error || "Server Error") +
+        "</div>";
+      return;
+    }
+
+    document.getElementById("totalUsers").textContent =
+      "👥 Total Users: " + data.total_users;
+
+    if(!data.users || data.users.length === 0){
+      section.innerHTML =
+        "<div class='card'>📭 কোনো User পাওয়া যায়নি।</div>";
+      return;
+    }
+
+    let html = "";
+
+    data.users.forEach((user, index) => {
+      const currentBalance = Number(user.coins ?? 0);
+
+      html += `
+        <div class="card" style="margin-top:8px;">
+          <b>#${index + 1}</b><br>
+          👤 Name:
+          ${escapeHtml(user.first_name || "No Name")}<br>
+          🔗 Username:
+          ${user.username
+            ? "@" + escapeHtml(user.username)
+            : "No Username"}<br>
+          🆔 User ID:
+          ${escapeHtml(user.user_id)}<br>
+          🔰 UID:
+          ${escapeHtml(user.uid || "No UID")}<br>
+          🪙 Current Balance:
+          ${escapeHtml(String(currentBalance))} Coins<br>
+          🕐 Joined:
+          ${escapeHtml(user.created_at || "")}
+        </div>
+      `;
+
+    });
+
+    section.innerHTML = html;
+
+  }catch(error){
+
+    console.error(error);
+
+    section.innerHTML =
+      "<div class='card'>❌ Server-এর সাথে যোগাযোগ করা যাচ্ছে না।</div>";
+  }
+}
+</script>
+
+
+
+<div class="card" style="margin-top:15px;">
+  <h3>🪙 Add Coins</h3>
+
+  <input
+    id="testCoinUid"
+    type="text"
+    placeholder="TaskMoon UID (e.g. TM572635)"
+    style="width:100%;padding:10px;margin:6px 0;"
+  >
+
+  <input
+    id="testCoinUserId"
+    type="number"
+    placeholder="অথবা Telegram User ID"
+    style="width:100%;padding:10px;margin:6px 0;"
+  >
+
+  <input
+    id="testCoinAmount"
+    type="number"
+    placeholder="Coins"
+    min="1"
+    style="width:100%;padding:10px;margin:6px 0;"
+  >
+
+  <button class="btn" onclick="addTestCoins()">
+    ➕ Add Coins
+  </button>
+
+  <div id="testCoinResult" style="margin-top:10px;"></div>
+</div>
+
+<script>
+async function addTestCoins() {
+  const uid = document.getElementById("testCoinUid").value.trim();
+  const userId = Number(document.getElementById("testCoinUserId").value);
+  const amount = Number(document.getElementById("testCoinAmount").value);
+  const result = document.getElementById("testCoinResult");
+
+  if (!uid && !userId) {
+    result.textContent = "❌ UID অথবা Telegram User ID দিন";
+    return;
+  }
+
+  if (!amount || amount <= 0) {
+    result.textContent = "❌ Coins সঠিকভাবে দিন";
+    return;
+  }
+
+  result.textContent = "⏳ Adding coins...";
+
+  try {
+    const response = await fetch(
+      API + "/admin/add-coins",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          admin_id: Number(currentAdminId),
+          uid: uid,
+          user_id: userId || undefined,
+          amount: amount
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      result.textContent =
+        "❌ " + (data.error || "Coin add failed");
+      return;
+    }
+
+    result.textContent =
+      "✅ Added " + data.added_coins +
+      " coins. Current balance: " +
+      data.user_coins + " Coins";
+
+  } catch (error) {
+    result.textContent = "❌ Server connection failed";
+  }
+}
+</script>
+
+</body>
+</html>
