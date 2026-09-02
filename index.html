@@ -1689,15 +1689,17 @@ function saveTaskData(){
 }
 
 function updateTaskBalance(){
-
-  const balance =
+  const taskBalance =
     document.getElementById("taskCoinBalance");
 
-  if(balance){
-    balance.textContent =
+  if(taskBalance){
+    taskBalance.textContent =
       taskCoins + " Coins";
   }
 
+  document.querySelectorAll(".balance").forEach(function(el){
+    el.textContent = taskCoins + " 🪙";
+  });
 }
 
 function renderTasks(){
