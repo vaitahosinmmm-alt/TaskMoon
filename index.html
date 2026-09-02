@@ -2681,10 +2681,7 @@ async function refreshTaskMoonBalance() {
       tgUser.id +
       "?t=" + Date.now(),
       {
-        cache: "no-store",
-        headers: {
-          "Cache-Control": "no-cache"
-        }
+        cache: "no-store"
       }
     );
 
