@@ -2688,19 +2688,29 @@ async function loadTaskMoonUID() {
   }
 }
 
-document.addEventListener(
-  "DOMContentLoaded",
-  async function() {
+async function startTaskMoonApp() {
+  try {
+    if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.ready();
+      window.Telegram.WebApp.expand();
+    }
+    await new Promise(r => setTimeout(r, 800));
     await loadTaskMoonUID();
     await refreshTaskMoonBalance();
     updateTaskBalance();
-
-    setTimeout(async function() {
+    setTimeout(async () => {
       await refreshTaskMoonBalance();
       updateTaskBalance();
     }, 2000);
+  } catch(e) {
+    console.error("TaskMoon startup error:", e);
   }
-);
+}
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", startTaskMoonApp);
+} else {
+  startTaskMoonApp();
+}
 
 
 async function runTaskMoonDiagnostic() {
