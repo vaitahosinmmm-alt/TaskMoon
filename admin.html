@@ -429,6 +429,236 @@ async function loadUsers(){
 
 
 <div class="card" style="margin-top:15px;">
+  <h3>💸 Withdrawals</h3>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+    <button type="button" onclick="loadWithdrawals('pending')">
+      ⏳ Pending
+    </button>
+    <button type="button" onclick="loadWithdrawals()">
+      📋 All
+    </button>
+    <button type="button" onclick="loadWithdrawals('approved')">
+      ✅ Approved
+    </button>
+    <button type="button" onclick="loadWithdrawals('rejected')">
+      ❌ Rejected
+    </button>
+  </div>
+
+  <div id="withdrawalList" style="margin-top:12px;">
+    <div>📭 Withdrawal load করা হয়নি।</div>
+  </div>
+</div>
+
+<script>
+async function loadWithdrawals(status = "pending") {
+
+  const adminId = document.getElementById("adminId").value.trim();
+
+  if (adminId !== "7136507076") {
+    alert("❌ আগে Admin Login করুন");
+    return;
+  }
+
+  const list = document.getElementById("withdrawalList");
+
+  list.innerHTML =
+    "<div class='card'>⏳ Loading withdrawals...</div>";
+
+  try {
+
+    let url =
+      API +
+      "/admin/withdrawals?admin_id=" +
+      encodeURIComponent(adminId);
+
+    if (status) {
+      url += "&status=" + encodeURIComponent(status);
+    }
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      list.innerHTML =
+        "<div class='card'>❌ " +
+        escapeHtml(data.error || "Server Error") +
+        "</div>";
+      return;
+    }
+
+    if (!data.withdrawals || data.withdrawals.length === 0) {
+      list.innerHTML =
+        "<div class='card'>📭 কোনো Withdrawal পাওয়া যায়নি।</div>";
+      return;
+    }
+
+    list.innerHTML = data.withdrawals.map(w => {
+
+      const isPending = w.status === "pending";
+
+      return `
+        <div class="card" style="margin-top:8px;">
+
+          <b>💸 Withdrawal #${escapeHtml(w.id)}</b>
+
+          <p>
+            🆔 User ID:
+            ${escapeHtml(w.user_id)}
+          </p>
+
+          <p>
+            🪙 Amount:
+            <b>${escapeHtml(w.amount)} Coins</b>
+          </p>
+
+          <p>
+            💳 Method:
+            ${escapeHtml(String(w.method).toUpperCase())}
+          </p>
+
+          <p>
+            📱 Number:
+            <b>${escapeHtml(w.number)}</b>
+          </p>
+
+          <p>
+            📌 Status:
+            <b>${escapeHtml(w.status)}</b>
+          </p>
+
+          <small>
+            🕒 Created:
+            ${escapeHtml(w.created_at || "")}
+          </small>
+
+          ${
+            w.updated_at
+            ?
+            `<br><small>
+              🔄 Updated:
+              ${escapeHtml(w.updated_at)}
+            </small>`
+            :
+            ""
+          }
+
+          ${
+            isPending
+            ?
+            `
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
+
+                <button
+                  type="button"
+                  onclick="updateWithdrawal(${Number(w.id)}, 'approved')"
+                >
+                  ✅ Approve
+                </button>
+
+                <button
+                  type="button"
+                  onclick="updateWithdrawal(${Number(w.id)}, 'rejected')"
+                >
+                  ❌ Reject
+                </button>
+
+              </div>
+            `
+            :
+            ""
+          }
+
+        </div>
+      `;
+
+    }).join("");
+
+  } catch (error) {
+
+    console.error("Withdrawal load error:", error);
+
+    list.innerHTML =
+      "<div class='card'>❌ Server-এর সাথে যোগাযোগ করা যাচ্ছে না।</div>";
+  }
+}
+
+
+async function updateWithdrawal(withdrawalId, status) {
+
+  const adminId = document.getElementById("adminId").value.trim();
+
+  if (adminId !== "7136507076") {
+    alert("❌ Admin Login করুন");
+    return;
+  }
+
+  const actionText =
+    status === "approved" ? "Approve" : "Reject";
+
+  if (!confirm(
+    "⚠️ আপনি কি Withdrawal #" +
+    withdrawalId +
+    " " +
+    actionText +
+    " করতে চান?"
+  )) {
+    return;
+  }
+
+  try {
+
+    const response = await fetch(
+      API + "/admin/withdrawal/status",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+          admin_id: Number(adminId),
+          withdrawal_id: Number(withdrawalId),
+          status: status
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+
+      alert(
+        "❌ Status update করা যায়নি.\n" +
+        (data.error || "Unknown error")
+      );
+
+      return;
+    }
+
+    alert(
+      status === "approved"
+      ? "✅ Withdrawal Approved!"
+      : "❌ Withdrawal Rejected এবং Coins Refund হয়েছে।"
+    );
+
+    loadWithdrawals("pending");
+
+  } catch (error) {
+
+    console.error("Withdrawal update error:", error);
+
+    alert(
+      "❌ Server-এর সাথে যোগাযোগ করা যাচ্ছে না।"
+    );
+  }
+}
+</script>
+
+
+<div class="card" style="margin-top:15px;">
   <h3>🪙 Add Coins</h3>
 
   <input
