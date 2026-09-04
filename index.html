@@ -2395,7 +2395,7 @@ async function submitWithdrawRequest(){
     return;
   }
 
-  if(!/^01[3-9][0-9]{8}$/.test(number)){
+  if(!/^01[3-9][0-9]{8}$/.test(number)){ console.log("WITHDRAW NUMBER:", JSON.stringify(number));
     alert("❌ সঠিক 11 সংখ্যার বাংলাদেশি নম্বর দিন।");
     return;
   }
@@ -2548,6 +2548,75 @@ async function loadTaskMoonUID() {
       uidBox.textContent =
         registerData.uid;
     }
+
+    // ==============================
+    // WITHDRAWAL STATUS CHECK
+    // ==============================
+
+    async function checkWithdrawalStatus(){
+
+      try {
+
+        const response = await fetch(
+          "https://taskmoon-backend.onrender.com/user/" +
+          telegramUser.id +
+          "/withdrawals?t=" + Date.now(),
+          {
+            cache: "no-store"
+          }
+        );
+
+        const data = await response.json();
+
+        if(!response.ok || !data.success || !data.withdrawals?.length){
+          return;
+        }
+
+        const latest = data.withdrawals[0];
+
+        if(latest.status === "approved"){
+
+          const key = "taskmoon_withdraw_approved_" + latest.id;
+
+          if(!localStorage.getItem(key)){
+
+            alert(
+              "✅ আপনার Withdrawal সফল হয়েছে!\\n\\n" +
+              "💰 Amount: " + latest.amount + " coins\\n" +
+              "💳 Method: " + latest.method.toUpperCase() + "\\n" +
+              "📱 Number: " + latest.number
+            );
+
+            localStorage.setItem(key, "shown");
+          }
+
+        }else if(latest.status === "rejected"){
+
+          const key = "taskmoon_withdraw_rejected_" + latest.id;
+
+          if(!localStorage.getItem(key)){
+
+            alert(
+              "❌ আপনার Withdrawal বাতিল হয়েছে।\\n\\n" +
+              "💰 " + latest.amount + " coins আপনার balance-এ ফেরত দেওয়া হয়েছে।"
+            );
+
+            localStorage.setItem(key, "shown");
+          }
+        }
+
+      } catch(error){
+
+        console.error(
+          "❌ Withdrawal status error:",
+          error
+        );
+      }
+    }
+
+    // Check immediately and every 5 seconds
+    checkWithdrawalStatus();
+    setInterval(checkWithdrawalStatus, 5000);
 
     // ==============================
     // REAL BALANCE FROM BACKEND
