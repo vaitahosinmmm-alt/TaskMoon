@@ -2468,16 +2468,15 @@ function escapeHtml(value){
 
 <script>
 async function loadTaskMoonUID() {
-  const uidBox = document.getElementById("taskmoonUserUID");
-
-  if (uidBox) {
-    uidBox.textContent = "Checking Telegram...";
-  }
-
-  console.log("Telegram object:", window.Telegram);
+  console.log("========== TASKMOON UID DEBUG ==========");
+  console.log("Telegram:", window.Telegram);
   console.log("WebApp:", window.Telegram?.WebApp);
+  console.log("initData:", window.Telegram?.WebApp?.initData);
   console.log("initDataUnsafe:", window.Telegram?.WebApp?.initDataUnsafe);
   console.log("Telegram user:", window.Telegram?.WebApp?.initDataUnsafe?.user);
+  console.log("========================================");
+
+  const uidBox = document.getElementById("taskmoonUserUID");
 
   const tg = window.Telegram?.WebApp;
 
@@ -2688,9 +2687,17 @@ async function loadTaskMoonUID() {
   }
 }
 
-document.addEventListener(
-  "DOMContentLoaded",
-  async function() {
+async function startTaskMoonApp() {
+  try {
+    const tg = window.Telegram?.WebApp;
+
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     await loadTaskMoonUID();
     await refreshTaskMoonBalance();
     updateTaskBalance();
@@ -2699,8 +2706,17 @@ document.addEventListener(
       await refreshTaskMoonBalance();
       updateTaskBalance();
     }, 2000);
+
+  } catch (error) {
+    console.error("❌ TaskMoon startup error:", error);
   }
-);
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", startTaskMoonApp);
+} else {
+  startTaskMoonApp();
+}
 
 
 async function runTaskMoonDiagnostic() {
