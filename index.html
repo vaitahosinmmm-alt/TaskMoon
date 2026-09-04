@@ -600,7 +600,9 @@ Nagad
 </div>
 
 <div class="card">
-<p>কোনো transaction এখনো নেই।</p>
+<div id="transactionList">
+<p>⏳ Transaction load হচ্ছে...</p>
+</div>
 </div>
 
 </div>
@@ -2865,6 +2867,79 @@ window.addEventListener("focus", function() {
 
 setInterval(refreshTaskMoonBalance, 1000);
 
-</script>
+
+async function loadTaskMoonTransactions() {
+
+  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+  if (!tgUser?.id) return;
+
+  const container = document.getElementById("transactionList");
+
+  if (!container) return;
+
+  try {
+
+    const response = await fetch(
+      "https://taskmoon-backend.onrender.com/history/" +
+      tgUser.id +
+      "?t=" + Date.now(),
+      { cache: "no-store" }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "History load failed");
+    }
+
+    if (!Array.isArray(data) || data.length === 0) {
+      container.innerHTML =
+        "<p>কোনো transaction এখনো নেই।</p>";
+      return;
+    }
+
+    container.innerHTML = data.map(function(tx) {
+
+      const amount = Number(tx.amount) || 0;
+      const positive = amount > 0;
+
+      return `
+        <div style="padding:12px 0;border-bottom:1px solid #153f40;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+            <div>
+              <div style="font-weight:600;">
+                ${positive ? "🟢" : "🔴"}
+                ${tx.description || tx.type || "Transaction"}
+              </div>
+              <div style="margin-top:4px;font-size:11px;color:#8eb0af;">
+                ${tx.created_at || ""}
+              </div>
+            </div>
+
+            <div style="font-weight:700;white-space:nowrap;">
+              ${positive ? "+" : ""}${amount} 🪙
+            </div>
+          </div>
+        </div>
+      `;
+
+    }).join("");
+
+  } catch (error) {
+
+    console.error("❌ Transaction history error:", error);
+
+    container.innerHTML =
+      "<p>❌ Transaction load করা যায়নি।</p>";
+  }
+}
+
+setTimeout(loadTaskMoonTransactions, 1000);
+setInterval(loadTaskMoonTransactions, 5000);
+
+
+
+
 </body>
 </html>
