@@ -2395,7 +2395,7 @@ async function submitWithdrawRequest(){
     return;
   }
 
-  if(!/^01[3-9]\\d{8}$/.test(number)){
+  if(!/^01[3-9][0-9]{8}$/.test(number)){
     alert("❌ সঠিক 11 সংখ্যার বাংলাদেশি নম্বর দিন।");
     return;
   }
