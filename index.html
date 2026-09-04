@@ -532,10 +532,67 @@ style="position:fixed;bottom:10px;left:10px;right:10px;z-index:99999;background:
 <div class="card">
 <h3>💸 Withdraw</h3>
 <p>তোমার balance থেকে withdrawal request পাঠাতে পারবে।</p>
-<br>
-<button type="button" onclick="openWithdrawForm()">
-💳 Withdraw Now
+
+<div id="withdrawForm" style="margin-top:15px;">
+
+<label style="display:block;margin-bottom:6px;font-size:12px;color:#8eb0af;">
+💰 Withdrawal Amount
+</label>
+
+<input
+  id="withdrawAmount"
+  type="number"
+  min="100"
+  placeholder="Minimum 100 coins"
+  style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #153f40;border-radius:11px;background:#081c1d;color:#fff;margin-bottom:12px;"
+>
+
+<label style="display:block;margin-bottom:6px;font-size:12px;color:#8eb0af;">
+💳 Payment Method
+</label>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+
+<button
+  type="button"
+  id="bkashBtn"
+  onclick="selectWithdrawMethod('bkash')"
+  style="background:#123334;color:#b5cccc;"
+>
+bKash
 </button>
+
+<button
+  type="button"
+  id="nagadBtn"
+  onclick="selectWithdrawMethod('nagad')"
+  style="background:#123334;color:#b5cccc;"
+>
+Nagad
+</button>
+
+</div>
+
+<input type="hidden" id="withdrawMethod">
+
+<label style="display:block;margin-bottom:6px;font-size:12px;color:#8eb0af;">
+📱 bKash / Nagad Number
+</label>
+
+<input
+  id="withdrawNumber"
+  type="tel"
+  inputmode="numeric"
+  maxlength="11"
+  placeholder="01XXXXXXXXX"
+  style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #153f40;border-radius:11px;background:#081c1d;color:#fff;margin-bottom:12px;"
+>
+
+<button type="button" onclick="submitWithdrawRequest()">
+💸 Submit Withdrawal
+</button>
+
+</div>
 </div>
 
 <div class="title">
@@ -2288,7 +2345,30 @@ function escapeHtml(value){
 }
 
 
-async function openWithdrawForm(){
+function selectWithdrawMethod(method){
+
+  const methodInput = document.getElementById("withdrawMethod");
+  const bkashBtn = document.getElementById("bkashBtn");
+  const nagadBtn = document.getElementById("nagadBtn");
+
+  methodInput.value = method;
+
+  if(method === "bkash"){
+    bkashBtn.style.background = "#27cfc0";
+    bkashBtn.style.color = "#031212";
+
+    nagadBtn.style.background = "#123334";
+    nagadBtn.style.color = "#b5cccc";
+  }else{
+    nagadBtn.style.background = "#27cfc0";
+    nagadBtn.style.color = "#031212";
+
+    bkashBtn.style.background = "#123334";
+    bkashBtn.style.color = "#b5cccc";
+  }
+}
+
+async function submitWithdrawRequest(){
 
   const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
@@ -2297,43 +2377,25 @@ async function openWithdrawForm(){
     return;
   }
 
-  const amountText = prompt(
-    "💰 কত coins withdraw করবেন?\nMinimum: 100 coins"
+  const amount = Number(
+    document.getElementById("withdrawAmount").value
   );
 
-  if(amountText === null) return;
+  const method = document.getElementById("withdrawMethod").value;
 
-  const amount = Number(amountText);
+  const number = document.getElementById("withdrawNumber").value.trim();
 
   if(!Number.isInteger(amount) || amount < 100){
     alert("❌ Minimum withdrawal 100 coins.");
     return;
   }
 
-  const method = prompt(
-    "💳 Payment Method লিখুন:\n\nbKash অথবা Nagad"
-  );
-
-  if(method === null) return;
-
-  const paymentMethod = method.trim().toLowerCase();
-
-  if(paymentMethod !== "bkash" && paymentMethod !== "nagad"){
-    alert("❌ শুধু bKash অথবা Nagad দেওয়া যাবে।");
+  if(method !== "bkash" && method !== "nagad"){
+    alert("❌ আগে bKash অথবা Nagad নির্বাচন করুন।");
     return;
   }
 
-  const number = prompt(
-    "📱 আপনার " +
-    (paymentMethod === "bkash" ? "bKash" : "Nagad") +
-    " নম্বর দিন:"
-  );
-
-  if(number === null) return;
-
-  const paymentNumber = number.trim();
-
-  if(!/^01[3-9]\d{8}$/.test(paymentNumber)){
+  if(!/^01[3-9]\\d{8}$/.test(number)){
     alert("❌ সঠিক 11 সংখ্যার বাংলাদেশি নম্বর দিন।");
     return;
   }
@@ -2350,8 +2412,8 @@ async function openWithdrawForm(){
         body: JSON.stringify({
           user_id: telegramUser.id,
           amount: amount,
-          method: paymentMethod,
-          number: paymentNumber
+          method: method,
+          number: number
         })
       }
     );
@@ -2360,27 +2422,31 @@ async function openWithdrawForm(){
 
     if(!response.ok || !data.success){
       alert(
-        "❌ Withdrawal request পাঠানো যায়নি.\n" +
+        "❌ Withdrawal request পাঠানো যায়নি.\\n" +
         (data.error || "Unknown error")
       );
       return;
     }
 
     alert(
-      "✅ Withdrawal Request Sent!\n\n" +
-      "💰 Amount: " + amount + " coins\n" +
-      "💳 Method: " + paymentMethod.toUpperCase() + "\n" +
-      "📱 Number: " + paymentNumber + "\n" +
+      "✅ Withdrawal Request Sent!\\n\\n" +
+      "💰 Amount: " + amount + " coins\\n" +
+      "💳 Method: " + method.toUpperCase() + "\\n" +
+      "📱 Number: " + number + "\\n" +
       "🟡 Status: Pending"
     );
+
+    document.getElementById("withdrawAmount").value = "";
+    document.getElementById("withdrawNumber").value = "";
+    document.getElementById("withdrawMethod").value = "";
+
+    selectWithdrawMethod("");
 
   }catch(error){
 
     console.error("Withdrawal error:", error);
 
-    alert(
-      "❌ Server-এর সাথে যোগাযোগ করা যাচ্ছে না।"
-    );
+    alert("❌ Server-এর সাথে যোগাযোগ করা যাচ্ছে না।");
   }
 }
 
