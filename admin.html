@@ -804,5 +804,111 @@ async function addTestCoins() {
 
 </script>
 
+
+<!-- TASK SUBMISSIONS -->
+<div class="card" style="margin-top:20px;">
+  <h2>📋 Task Submissions</h2>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+    <button onclick="loadTaskSubmissions('pending')">⏳ Pending</button>
+    <button onclick="loadTaskSubmissions('approved')">✅ Approved</button>
+    <button onclick="loadTaskSubmissions('rejected')">❌ Rejected</button>
+    <button onclick="loadTaskSubmissions()">📋 All</button>
+  </div>
+
+  <div id="taskSubmissionList">Loading...</div>
+</div>
+
+<script>
+async function loadTaskSubmissions(status="pending") {
+  const box = document.getElementById("taskSubmissionList");
+  box.innerHTML = "⏳ Loading...";
+
+  try {
+    let url = API + "/admin/task-submissions?admin_id=" +
+      encodeURIComponent(ADMIN_ID);
+
+    if (status) url += "&status=" + encodeURIComponent(status);
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!res.ok) {
+      box.innerHTML = "❌ " + (data.error || "Failed");
+      return;
+    }
+
+    if (!data.submissions || data.submissions.length === 0) {
+      box.innerHTML = "📭 No submissions found";
+      return;
+    }
+
+    box.innerHTML = data.submissions.map(row => `
+      <div style="border:1px solid #444;border-radius:12px;padding:14px;margin-bottom:12px;">
+        <b>🔢 #${row.serial}</b>
+        <p>📝 <b>${escapeHtml(row.task_title)}</b></p>
+        <p>👤 User ID: ${row.user_id}</p>
+        <p>🪙 Reward: ${row.reward}</p>
+        <p>📎 Proof:<br>
+          <span style="word-break:break-all;">${escapeHtml(row.proof || "N/A")}</span>
+        </p>
+        <p>💬 Note: ${escapeHtml(row.note || "N/A")}</p>
+        <p>📌 Status: <b>${escapeHtml(row.status)}</b></p>
+        <small>🕒 ${escapeHtml(row.created_at || "")}</small>
+
+        ${row.status === "pending" ? `
+          <div style="margin-top:10px;display:flex;gap:8px;">
+            <button onclick="updateTaskSubmission(${row.id},'approved')">
+              ✅ Approve
+            </button>
+            <button onclick="updateTaskSubmission(${row.id},'rejected')">
+              ❌ Reject
+            </button>
+          </div>
+        ` : ""}
+      </div>
+    `).join("");
+
+  } catch (e) {
+    box.innerHTML = "❌ Network error";
+  }
+}
+
+async function updateTaskSubmission(id, status) {
+  if (!confirm(status === "approved"
+      ? "Approve this submission?"
+      : "Reject this submission?")) return;
+
+  try {
+    const res = await fetch(API + "/admin/task-submission/status", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        admin_id: Number(ADMIN_ID),
+        submission_id: id,
+        status: status
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert("❌ " + (data.error || "Failed"));
+      return;
+    }
+
+    alert(status === "approved"
+      ? "✅ Approved & reward added"
+      : "❌ Submission rejected");
+
+    loadTaskSubmissions("pending");
+
+  } catch (e) {
+    alert("❌ Network error");
+  }
+}
+
+</script>
+
 </body>
 </html>

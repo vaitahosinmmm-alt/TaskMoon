@@ -960,27 +960,66 @@ document.getElementById("taskModal")
 
 }
 
-function submitTask(){
+async function submitTask(){
+    const proofEl = document.getElementById("proof");
+    const proof = proofEl ? proofEl.value.trim() : "";
 
-const proof=
-document.getElementById("proof")
-.value.trim();
+    if(!proof){
+        alert("⚠️ আগে proof লিখুন।");
+        return;
+    }
 
-if(!proof){
+    const task = window.currentTask;
+    if(!task){
+        alert("⚠️ Task পাওয়া যায়নি।");
+        return;
+    }
 
-alert("⚠️ আগে proof লিখুন।");
+    const tgUser =
+        window.Telegram &&
+        Telegram.WebApp &&
+        Telegram.WebApp.initDataUnsafe &&
+        Telegram.WebApp.initDataUnsafe.user;
 
-return;
+    if(!tgUser || !tgUser.id){
+        alert("⚠️ Telegram App-এর ভিতর থেকে Task submit করুন।");
+        return;
+    }
 
-}
+    try{
+        const res = await fetch(
+            "https://taskmoon-backend.onrender.com/task/submit",
+            {
+                method:"POST",
+                headers:{"Content-Type":"application/json"},
+                body:JSON.stringify({
+                    user_id:Number(tgUser.id),
+                    task_id:String(task.id),
+                    task_title:task.title,
+                    reward:Number(task.reward),
+                    proof:proof,
+                    note:""
+                })
+            }
+        );
 
-alert(
-"✅ Task submitted!\n\n"+
-"Admin verification-এর পর reward যোগ হবে।"
-);
+        const data = await res.json();
 
-closeModal();
+        if(!res.ok){
+            alert("❌ " + (data.error || "Submit failed"));
+            return;
+        }
 
+        alert(
+            "✅ Work Submitted!\n\n"+
+            "Admin verification-এর পর reward যোগ হবে।"
+        );
+
+        closeModal();
+
+    }catch(e){
+        alert("❌ Network error");
+    }
 }
 
 function showIslamic(type){
@@ -1840,36 +1879,24 @@ function renderTasks(){
 }
 
 function startTask(id){
+    const task = TASKS.find(t => t.id === id);
+    if(!task) return;
 
-  alert("Coming Soon Dear ❤️🌙");
-  return;
+    window.currentTask = task;
 
-  const task =
-    TASKS.find(item => item.id === id);
+    const modal = document.getElementById("taskModal");
+    if(!modal){
+        alert("⚠️ Task window পাওয়া যায়নি।");
+        return;
+    }
 
-  if(!task) return;
+    const proof = document.getElementById("proof");
+    if(proof) proof.value = "";
 
-  if(task.link && task.link !== "#"){
-
-    window.open(task.link, "_blank");
-
-  }
-
-  const button =
-    document.getElementById("complete-" + id);
-
-  if(button){
-
-    button.style.display = "block";
-
-    button.textContent =
-      "✅ কাজ শেষ হলে এখানে চাপুন";
-
-  }
-
+    modal.classList.add("show");
 }
 
-async function completeTask(id){
+function completeTask(id){
 
   if(completedTasks.includes(id)){
 
