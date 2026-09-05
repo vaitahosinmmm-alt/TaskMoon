@@ -197,25 +197,16 @@ async function loadChats(){
           📋 Problem: ${escapeHtml(chat.problem)}
         </p>
 
-        <p>
-          💬 Message:
-          ${escapeHtml(chat.message || "No message")}
-        </p>
+        <div
+          id="conversation-${chat.id}"
+          class="conversation"
+        >
+          💬 Loading conversation...
+        </div>
 
         <p>
           🟢 Status: ${escapeHtml(chat.status)}
         </p>
-
-        ${
-          chat.admin_reply
-          ?
-          `<div class="reply">
-             ↩️ Admin Reply:<br>
-             ${escapeHtml(chat.admin_reply)}
-           </div>`
-          :
-          ""
-        }
 
         <small>
           🕒 ${escapeHtml(chat.created_at)}
@@ -246,6 +237,10 @@ async function loadChats(){
 
     `).join("");
 
+    data.forEach(chat => {
+      loadConversation(chat.id);
+    });
+
     document.querySelectorAll(".replyBtn").forEach(button => {
 
       button.addEventListener("click", function(){
@@ -266,6 +261,57 @@ async function loadChats(){
     list.innerHTML =
       "<div class='card'>❌ Server connection failed.</div>";
 
+  }
+}
+
+
+async function loadConversation(chatId){
+  const box = document.getElementById("conversation-" + chatId);
+
+  if(!box) return;
+
+  try{
+    const response = await fetch(
+      API +
+      "/admin/support/messages/" +
+      chatId +
+      "?admin_id=" +
+      encodeURIComponent(currentAdminId)
+    );
+
+    const data = await response.json();
+
+    if(!response.ok || !data.success){
+      box.innerHTML = "❌ Conversation load failed.";
+      return;
+    }
+
+    if(!Array.isArray(data.messages) || data.messages.length === 0){
+      box.innerHTML = "📭 এখনো কোনো message নেই।";
+      return;
+    }
+
+    box.innerHTML = data.messages.map(item => {
+      const isAdmin = item.sender === "admin";
+
+      return `
+        <div class="message">
+          <strong>
+            ${isAdmin ? "👨‍💼 Support" : "👤 User"}
+          </strong>
+          <div>
+            ${escapeHtml(item.message)}
+          </div>
+          <small>
+            ${escapeHtml(item.created_at || "")}
+          </small>
+        </div>
+      `;
+    }).join("");
+
+  }catch(error){
+    console.error(error);
+    box.innerHTML = "❌ Server connection failed.";
   }
 }
 
