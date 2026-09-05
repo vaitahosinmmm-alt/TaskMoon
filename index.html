@@ -2042,17 +2042,260 @@ document.addEventListener(
 <script>
 
 function openLiveChat(){
+  const box =
+    document.getElementById("supportChatBox");
 
-  const box = document.getElementById("supportChatBox");
-
-  if(box){
-    box.style.display = "block";
+  if(!box){
+    return;
   }
 
+  box.style.display = "block";
+
+  const telegramUser =
+    window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+  let supportUserId;
+
+  if(telegramUser && telegramUser.id){
+    supportUserId = Number(telegramUser.id);
+
+    localStorage.setItem(
+      "taskmoon_support_user_id",
+      String(supportUserId)
+    );
+  }else{
+    const savedUserId =
+      localStorage.getItem("taskmoon_support_user_id");
+
+    if(savedUserId){
+      supportUserId = Number(savedUserId);
+    }
+  }
+
+  const savedChatId = Number(
+    localStorage.getItem("taskmoon_support_chat_id")
+  );
+
+  // ==============================
+  // RESTORE EXISTING CHAT
+  // ==============================
+
+  if(savedChatId && supportUserId){
+    fetch(
+      "https://taskmoon-backend.onrender.com/support/chat/" +
+      savedChatId +
+      "?user_id=" +
+      encodeURIComponent(supportUserId)
+    )
+    .then(async response => {
+      const data = await response.json();
+
+      if(
+        response.ok &&
+        data.success &&
+        data.chat &&
+        data.chat.status === "open"
+      ){
+        const chat = data.chat;
+
+        box.innerHTML = `
+          <div class="card">
+
+            <h3>💬 TaskMoon Support</h3>
+
+            <p>
+              🆔 UID:
+              ${escapeHtml(chat.uid)}
+            </p>
+
+            <p>
+              📋 Problem:
+              ${escapeHtml(chat.problem)}
+            </p>
+
+            <div
+              id="liveChatMessages"
+              style="
+                background:#071819;
+                border:1px solid #153f40;
+                border-radius:12px;
+                padding:12px;
+                min-height:180px;
+                max-height:350px;
+                overflow-y:auto;
+                margin:10px 0;
+              "
+            >
+              <small>Loading messages...</small>
+            </div>
+
+            <textarea
+              id="supportMessageInput"
+              placeholder="আপনার message লিখুন..."
+              style="
+                width:100%;
+                min-height:80px;
+                padding:12px;
+                border-radius:10px;
+                border:1px solid #153f40;
+                background:#071819;
+                color:#fff;
+                box-sizing:border-box;
+              "
+            ></textarea>
+
+            <button
+              class="btn"
+              onclick="sendSupportMessage(${Number(chat.id)})"
+            >
+              📤 Send Message
+            </button>
+
+          </div>
+        `;
+
+        startSupportChatRefresh(Number(chat.id));
+        return;
+      }
+
+      // Old chat is closed/invalid
+      localStorage.removeItem(
+        "taskmoon_support_chat_id"
+      );
+
+      // Show fresh support form
+      box.innerHTML = `
+        <div class="card">
+
+          <h3>🆔 UID দিন</h3>
+
+          <input
+            id="supportUID"
+            type="text"
+            placeholder="আপনার UID লিখুন"
+            style="
+              width:100%;
+              padding:12px;
+              border-radius:10px;
+              border:1px solid #153f40;
+              background:#071819;
+              color:#fff;
+              box-sizing:border-box;
+              margin-bottom:12px;
+            "
+          >
+
+          <h3>📋 সমস্যা Select করুন</h3>
+
+          <select
+            id="supportProblem"
+            style="
+              width:100%;
+              padding:12px;
+              border-radius:10px;
+              border:1px solid #153f40;
+              background:#071819;
+              color:#fff;
+              box-sizing:border-box;
+              margin-bottom:12px;
+            "
+          >
+            <option value="">সমস্যা নির্বাচন করুন</option>
+            <option value="Account Problem">Account Problem</option>
+            <option value="Task Problem">Task Problem</option>
+            <option value="Coin Problem">Coin Problem</option>
+            <option value="Referral Problem">Referral Problem</option>
+            <option value="Withdrawal Problem">Withdrawal Problem</option>
+            <option value="Other">Other</option>
+          </select>
+
+          <button
+            class="btn"
+            onclick="startSupportChat()"
+          >
+            🚀 Start the Chat
+          </button>
+
+        </div>
+      `;
+    })
+    .catch(error => {
+      console.error(
+        "Live chat restore error:",
+        error
+      );
+
+      localStorage.removeItem(
+        "taskmoon_support_chat_id"
+      );
+
+      if(supportChatRefreshTimer){
+        clearInterval(supportChatRefreshTimer);
+        supportChatRefreshTimer = null;
+      }
+
+      box.innerHTML = `
+        <div class="card">
+          <h3>🆔 UID দিন</h3>
+
+          <input
+            id="supportUID"
+            type="text"
+            placeholder="আপনার UID লিখুন"
+            style="
+              width:100%;
+              padding:12px;
+              border-radius:10px;
+              border:1px solid #153f40;
+              background:#071819;
+              color:#fff;
+              box-sizing:border-box;
+              margin-bottom:12px;
+            "
+          >
+
+          <h3>📋 সমস্যা Select করুন</h3>
+
+          <select
+            id="supportProblem"
+            style="
+              width:100%;
+              padding:12px;
+              border-radius:10px;
+              border:1px solid #153f40;
+              background:#071819;
+              color:#fff;
+              box-sizing:border-box;
+              margin-bottom:12px;
+            "
+          >
+            <option value="">সমস্যা নির্বাচন করুন</option>
+            <option value="Account Problem">Account Problem</option>
+            <option value="Task Problem">Task Problem</option>
+            <option value="Coin Problem">Coin Problem</option>
+            <option value="Referral Problem">Referral Problem</option>
+            <option value="Withdrawal Problem">Withdrawal Problem</option>
+            <option value="Other">Other</option>
+          </select>
+
+          <button
+            class="btn"
+            onclick="startSupportChat()"
+          >
+            🚀 Start the Chat
+          </button>
+        </div>
+      `;
+    });
+
+    return;
+  }
+
+  // No existing chat — keep/show the original form
 }
 
-function startSupportChat(){
 
+function startSupportChat(){
   const uid =
     document.getElementById("supportUID")?.value.trim();
 
@@ -2076,12 +2319,13 @@ function startSupportChat(){
 
   if(telegramUser && telegramUser.id){
     supportUserId = Number(telegramUser.id);
-  } else {
+  }else{
     let saved =
       localStorage.getItem("taskmoon_support_user_id");
 
     if(!saved){
       saved = String(Date.now());
+
       localStorage.setItem(
         "taskmoon_support_user_id",
         saved
@@ -2096,33 +2340,210 @@ function startSupportChat(){
     String(supportUserId)
   );
 
-  fetch(
-    "https://taskmoon-backend.onrender.com/support/chat",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        user_id: supportUserId,
-        uid: uid,
-        problem: problem,
-        message: ""
-      })
-    }
-  )
-  .then(async response => {
+  const savedChatId = Number(
+    localStorage.getItem("taskmoon_support_chat_id")
+  );
 
-    const data = await response.json();
+  // ==============================
+  // REOPEN EXISTING SUPPORT CHAT
+  // ==============================
 
-    if(!response.ok || !data.success){
+  if(savedChatId){
+
+    fetch(
+      "https://taskmoon-backend.onrender.com/support/chat/" +
+      savedChatId +
+      "?user_id=" +
+      supportUserId
+    )
+    .then(async response => {
+
+      const existingData =
+        await response.json();
+
+      if(
+        response.ok &&
+        existingData.success &&
+        existingData.chat &&
+        existingData.chat.status === "open"
+      ){
+
+        const chat =
+          existingData.chat;
+
+        const box =
+          document.getElementById(
+            "supportChatBox"
+          );
+
+        if(!box){
+          throw new Error(
+            "Support Chat Box পাওয়া যায়নি"
+          );
+        }
+
+        box.style.display = "block";
+
+        box.innerHTML = `
+          <div class="card">
+
+            <h3>💬 TaskMoon Support</h3>
+
+            <p>
+              🆔 UID:
+              ${escapeHtml(chat.uid)}
+            </p>
+
+            <p>
+              📋 Problem:
+              ${escapeHtml(chat.problem)}
+            </p>
+
+            <div
+              id="liveChatMessages"
+              style="
+                background:#071819;
+                border:1px solid #153f40;
+                border-radius:12px;
+                padding:12px;
+                min-height:180px;
+                max-height:350px;
+                overflow-y:auto;
+                margin:10px 0;
+              "
+            >
+              <small>
+                Loading messages...
+              </small>
+            </div>
+
+            <textarea
+              id="supportMessageInput"
+              placeholder="আপনার message লিখুন..."
+              style="
+                width:100%;
+                min-height:80px;
+                padding:12px;
+                border-radius:10px;
+                border:1px solid #153f40;
+                background:#071819;
+                color:#fff;
+                box-sizing:border-box;
+              "
+            ></textarea>
+
+            <button
+              class="btn"
+              onclick="sendSupportMessage(${Number(chat.id)})"
+            >
+              📤 Send Message
+            </button>
+
+          </div>
+        `;
+
+        startSupportChatRefresh(
+          Number(chat.id)
+        );
+
+        return;
+      }
+
+      // Old chat is closed/invalid
+      localStorage.removeItem(
+        "taskmoon_support_chat_id"
+      );
+
+      createNewSupportChat(
+        supportUserId,
+        uid,
+        problem
+      );
+
+    })
+    .catch(error => {
+
+      console.error(
+        "Existing support chat error:",
+        error
+      );
+
+      localStorage.removeItem(
+        "taskmoon_support_chat_id"
+      );
+
+      createNewSupportChat(
+        supportUserId,
+        uid,
+        problem
+      );
+
+    });
+
+    return;
+  }
+
+  // ==============================
+  // CREATE FIRST SUPPORT CHAT
+  // ==============================
+
+  createNewSupportChat(
+    supportUserId,
+    uid,
+    problem
+  );
+}
+
+
+async function createNewSupportChat(
+  supportUserId,
+  uid,
+  problem
+){
+
+  try{
+
+    const response = await fetch(
+      "https://taskmoon-backend.onrender.com/support/chat",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+          user_id: supportUserId,
+          uid: uid,
+          problem: problem,
+          message: ""
+        })
+      }
+    );
+
+    const data =
+      await response.json();
+
+    if(
+      !response.ok ||
+      !data.success
+    ){
       throw new Error(
-        data.error || "Chat শুরু করা যায়নি"
+        data.error ||
+        "Chat শুরু করা যায়নি"
       );
     }
 
+    // Save chat ID permanently for this browser/user
+    localStorage.setItem(
+      "taskmoon_support_chat_id",
+      String(data.chat_id)
+    );
+
     const box =
-      document.getElementById("supportChatBox");
+      document.getElementById(
+        "supportChatBox"
+      );
 
     if(!box){
       throw new Error(
@@ -2137,9 +2558,15 @@ function startSupportChat(){
 
         <h3>💬 TaskMoon Support</h3>
 
-        <p>🆔 UID: ${escapeHtml(uid)}</p>
+        <p>
+          🆔 UID:
+          ${escapeHtml(uid)}
+        </p>
 
-        <p>📋 Problem: ${escapeHtml(problem)}</p>
+        <p>
+          📋 Problem:
+          ${escapeHtml(problem)}
+        </p>
 
         <div
           id="liveChatMessages"
@@ -2154,7 +2581,9 @@ function startSupportChat(){
             margin:10px 0;
           "
         >
-          <small>Loading messages...</small>
+          <small>
+            Loading messages...
+          </small>
         </div>
 
         <textarea
@@ -2186,19 +2615,19 @@ function startSupportChat(){
       Number(data.chat_id)
     );
 
-  })
-  .catch(error => {
+  }catch(error){
 
-    console.error("Support chat error:", error);
+    console.error(
+      "Support chat error:",
+      error
+    );
 
     alert(
       "❌ Chat শুরু করা যায়নি।\n" +
       error.message
     );
-
-  });
+  }
 }
-
 
 async function sendSupportMessage(chatId){
   const input = document.getElementById("supportMessageInput");
