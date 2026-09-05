@@ -209,7 +209,7 @@ async function loadChats(){
         </p>
 
         <small>
-          🕒 ${escapeHtml(chat.created_at)}
+          🕒 ${escapeHtml(formatBangladeshTime(chat.created_at))}
         </small>
 
         ${
@@ -303,7 +303,7 @@ async function loadConversation(chatId){
             ${escapeHtml(item.message)}
           </div>
           <small>
-            ${escapeHtml(item.created_at || "")}
+            ${escapeHtml(formatBangladeshTime(item.created_at))}
           </small>
         </div>
       `;
@@ -377,6 +377,22 @@ async function sendReply(chatId){
   }
 }
 
+
+function formatBangladeshTime(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString("en-GB", {
+    timeZone: "Asia/Dhaka",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+  });
+}
 
 function escapeHtml(value){
 
@@ -454,7 +470,7 @@ async function loadUsers(){
           🪙 Current Balance:
           ${escapeHtml(String(currentBalance))} Coins<br>
           🕐 Joined:
-          ${escapeHtml(user.created_at || "")}
+          ${escapeHtml(formatBangladeshTime(user.created_at))}
         </div>
       `;
 
@@ -576,7 +592,7 @@ async function loadWithdrawals(status = "pending") {
 
           <small>
             🕒 Created:
-            ${escapeHtml(w.created_at || "")}
+            ${escapeHtml(formatBangladeshTime(w.created_at))}
           </small>
 
           ${
@@ -584,7 +600,7 @@ async function loadWithdrawals(status = "pending") {
             ?
             `<br><small>
               🔄 Updated:
-              ${escapeHtml(w.updated_at)}
+              ${escapeHtml(formatBangladeshTime(w.updated_at))}
             </small>`
             :
             ""
@@ -900,7 +916,7 @@ async function loadTaskSubmissions(status="pending") {
         </p>
         <p>💬 Note: ${escapeHtml(row.note || "N/A")}</p>
         <p>📌 Status: <b>${escapeHtml(row.status)}</b></p>
-        <small>🕒 ${escapeHtml(row.created_at || "")}</small>
+        <small>🕒 ${escapeHtml(formatBangladeshTime(row.created_at))}</small>
 
         ${row.status === "pending" ? `
           <div style="margin-top:10px;display:flex;gap:8px;">
