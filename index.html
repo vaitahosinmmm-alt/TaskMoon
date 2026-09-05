@@ -2342,6 +2342,8 @@ async function loadSupportChat(chatId){
   }
 }
 
+let supportChatRefreshTimer = null;
+
 function startSupportChatRefresh(chatId){
 
   if(supportChatRefreshTimer){
