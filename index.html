@@ -353,17 +353,13 @@ textarea{
   font-size:12px;
   line-height:1.6;
 }
-#taskmoonDiagnostic{display:none!important;}
+
 </style>
 </head>
 
 <body>
 
-<div id="taskmoonDiagnostic"
-style="position:fixed;bottom:10px;left:10px;right:10px;z-index:99999;background:#111;color:#fff;padding:12px;border:1px solid #00d4aa;border-radius:10px;font-size:13px;display:none;">
-<b>🔧 TaskMoon Diagnostic</b><br>
-<span id="diagStatus">Checking...</span>
-</div>
+
 
 
 <div class="app">
@@ -2740,121 +2736,6 @@ if (document.readyState === "loading") {
   startTaskMoonApp();
 }
 
-
-async function runTaskMoonDiagnostic() {
-
-  const box =
-    document.getElementById("taskmoonDiagnostic");
-
-  const status =
-    document.getElementById("diagStatus");
-
-  if (!box || !status) return;
-
-  box.style.display = "block";
-  status.innerHTML =
-    "⏳ Checking Telegram User ID...";
-
-  const tg =
-    window.Telegram?.WebApp;
-
-  if (tg) {
-    tg.ready();
-  }
-
-  let user = null;
-
-  for (let i = 0; i < 20; i++) {
-
-    user =
-      window.Telegram?.WebApp?.initDataUnsafe?.user;
-
-    if (user?.id) break;
-
-    await new Promise(resolve =>
-      setTimeout(resolve, 300)
-    );
-  }
-
-  if (!user?.id) {
-
-    status.innerHTML =
-      "❌ Telegram User ID পাওয়া যায়নি<br>" +
-      "WebApp Telegram-এর ভিতর থেকে খুলতে হবে.";
-
-    return;
-  }
-
-  status.innerHTML =
-    "✅ Telegram User ID: " +
-    user.id +
-    "<br>⏳ Backend balance checking...";
-
-  try {
-
-    const response = await fetch(
-      "https://taskmoon-backend.onrender.com/user/" +
-      user.id +
-      "?diagnostic=" + Date.now(),
-      {
-        cache: "no-store"
-      }
-    );
-
-    const data =
-      await response.json();
-
-    if (!response.ok) {
-
-      status.innerHTML =
-        "❌ Backend Error<br>" +
-        "HTTP: " + response.status +
-        "<br>" +
-        JSON.stringify(data);
-
-      return;
-    }
-
-    status.innerHTML =
-      "✅ Telegram User ID: " +
-      user.id +
-      "<br>" +
-      "🔰 UID: " +
-      (data.uid || "N/A") +
-      "<br>" +
-      "🪙 Backend Coins: " +
-      (data.coins ?? "N/A") +
-      "<br>" +
-      "🖥️ Frontend Coins: " +
-      taskCoins;
-
-    console.log(
-      "🔧 TASKMOON DIAGNOSTIC",
-      {
-        telegram_user_id: user.id,
-        uid: data.uid,
-        backend_coins: data.coins,
-        frontend_coins: taskCoins
-      }
-    );
-
-  } catch (error) {
-
-    status.innerHTML =
-      "❌ Backend connection failed<br>" +
-      error.message;
-  }
-}
-
-document.addEventListener(
-  "DOMContentLoaded",
-  function() {
-    setTimeout(
-      runTaskMoonDiagnostic,
-      1500
-    );
-  }
-);
 
 async function refreshTaskMoonBalance() {
   const tg = window.Telegram?.WebApp;
